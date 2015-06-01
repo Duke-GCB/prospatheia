@@ -11,11 +11,11 @@
   <body>
     <div ng-controller="ReportCardCtrl as reportCard">
       <div class="clickers">
-        <div ng-repeat="effort in reportCard.effort">
-          <span>{{effort.key}}</span>
-          <a href="#" ng-click="reportCard.reduceEffort(effort)">-</a>
-          <input ng-model="effort.y"></input>
-          <a href="#" ng-click="reportCard.increaseEffort(effort)">+</a>
+        <div ng-repeat="category in reportCard.effort track by $index">
+          <span>{{category.key}}</span>
+          <a href="#" ng-click="reportCard.reduceEffort($index)">-</a>
+          <input ng-model="category.y"></input>
+          <a href="#" ng-click="reportCard.increaseEffort($index)">+</a>
         </div>
         <span>Clickers</span>
       </div>

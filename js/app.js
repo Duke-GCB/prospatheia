@@ -9,8 +9,19 @@ angular.module('reportcard', [ 'nvd3ChartDirectives' ])
       {key: "Infrastructure", y: 20},
       {key: "Tickets", y: 20}
     ];
-    reportCard.reduceEffort = function(effort) { effort.y = effort.y - 5;};
-    reportCard.increaseEffort = function(effort) { effort.y = effort.y + 5;};
+
+      // Data-binding is to whole collection, not individual slices
+    var changeEffort = function(index, delta) {
+      effort = angular.copy(reportCard.effort)
+      effort[index].y = effort[index].y + delta;
+      reportCard.effort = effort;
+    };
+    reportCard.reduceEffort = function(index) {
+      changeEffort(index, -5);
+    };
+    reportCard.increaseEffort = function(index) {
+      changeEffort(index, 5);
+    }
     reportCard.xFunction = function() {
       return function(d) {
         return d.key;
