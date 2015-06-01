@@ -1,15 +1,24 @@
-angular.module('reportcard', [ 'n3-pie-chart' ])
+angular.module('reportcard', [ 'nvd3ChartDirectives' ])
   .controller('ReportCardCtrl', function() {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
-    reportCard.options = {thickness: 100, mode: "pie"};
     reportCard.effort = [
-      {label: "R&D", value: 20, color: "red"},
-      {label: "Admin", value: 20, color: "green"},
-      {label: "Collaborative Research", value: 20, color: "blue"},
-      {label: "Infrastructure", value: 20, color: "orange"},
-      {label: "Tickets", value: 20, color: "purple"}
+      {key: "R&D", y: 20},
+      {key: "Admin", y: 20},
+      {key: "Collaborative Research", y:20},
+      {key: "Infrastructure", y: 20},
+      {key: "Tickets", y: 20}
     ];
-    reportCard.reduceEffort = function(effort) { effort.value = effort.value - 5;};
-    reportCard.increaseEffort = function(effort) { effort.value = effort.value + 5;};
+    reportCard.reduceEffort = function(effort) { effort.y = effort.y - 5;};
+    reportCard.increaseEffort = function(effort) { effort.y = effort.y + 5;};
+    reportCard.xFunction = function() {
+      return function(d) {
+        return d.key;
+      }
+    };
+    reportCard.yFunction = function() {
+      return function(d) {
+        return d.y;
+      }
+    };
   });
