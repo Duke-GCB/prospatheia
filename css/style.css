@@ -1,0 +1,8 @@
+body {
+	font-family: 'Helvetica', Helvetica, Arial, sans-serif;
+}
+
+div.piechart {
+  width: auto;
+  height: 500px;
+}
