@@ -17,8 +17,8 @@
         <div class="row">
           <div class="controls col-md-4">
             <h3>Effort</h3>
-              <form>
-                <div ng-repeat="category in reportCard.effort track by $index" class="form-group">
+              <form class="form row">
+                <div ng-repeat="category in reportCard.effort track by $index" class="form-group col-md-6">
                   <label class="control-label">{{category.key}}</label>
                   <div class="input-group">
                     <span class="input-group-btn">
@@ -30,7 +30,10 @@
                     </span>
                   </div><!-- /input-group -->
                 </div>
-                <button class="btn btn-success" ng-click="reportCard.addEffort()">Add Effort</button>
+                <div class="col-md-6">
+                  <label class="control-label">&nbsp;</label>
+                  <button class="form-control btn btn-success pull-right" ng-click="reportCard.addEffort()">Add Effort</button>
+                </div>
               </form>
             </div>
           <div class="piechart col-md-8">
