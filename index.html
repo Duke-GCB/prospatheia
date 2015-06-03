@@ -8,28 +8,42 @@
     <script src="js/lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="js/app.js"></script>
     <link rel="stylesheet" href="js/lib/nvd3/nv.d3.min.css"/>
+    <link rel="stylesheet" href="js/lib/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="css/style.css"/>
   </head>
   <body>
     <div ng-controller="ReportCardCtrl as reportCard">
-      <div class="piechart">
-        <nvd3-pie-chart
-      	  data="reportCard.effort"
-          id="reportCardPieChart"
-          x="reportCard.xFunction()"
-          y="reportCard.yFunction()"
-          showLabels="true"
-          interactive="true">
-        <svg></svg>
-        </nvd3-pie-chart>
-      </div>
-      <div class="controls">
-        <h3>Controls</h3>
-        <div ng-repeat="category in reportCard.effort track by $index">
-          <span>{{category.key}}</span>
-          <a href="#" ng-click="reportCard.reduceEffort($index)">-</a>
-          <input ng-model="category.y"></input>
-          <a href="#" ng-click="reportCard.increaseEffort($index)">+</a>
+      <div class="container">
+        <div class="row">
+          <div class="controls col-md-4">
+            <h3>Effort</h3>
+              <form>
+                <div ng-repeat="category in reportCard.effort track by $index" class="form-group">
+                  <label class="control-label">{{category.key}}</label>
+                  <div class="input-group">
+                    <span class="input-group-btn">
+                      <a class="btn btn-info" role="button" href="#" ng-click="reportCard.reduceEffort($index)">-</a>
+                    </span>
+                  <input type="text" class="form-control" ng-model="category.y"></input>
+                    <span class="input-group-btn">
+                      <a class="btn btn-info" role="button" href="#" ng-click="reportCard.increaseEffort($index)">+</a>
+                    </span>
+                  </div><!-- /input-group -->
+                </div>
+                <button class="btn btn-success">Add Effort</button>
+              </form>
+            </div>
+          <div class="piechart col-md-8">
+            <nvd3-pie-chart
+              data="reportCard.effort"
+              id="reportCardPieChart"
+              x="reportCard.xFunction()"
+              y="reportCard.yFunction()"
+              showLabels="true"
+              interactive="true">
+            <svg></svg>
+            </nvd3-pie-chart>
+          </div>
         </div>
       </div>
     </div>
