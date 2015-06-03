@@ -1,4 +1,4 @@
-angular.module('reportcard', [ 'nvd3ChartDirectives' ])
+angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap'])
   .controller('ReportCardCtrl', function() {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
