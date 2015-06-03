@@ -17,7 +17,8 @@
     "angular": "~1.4.0",
     "d3": "~3.5.5",
     "nvd3": "~1.7.1",
-    "angularjs-nvd3-directives": "~0.0.7"
+    "angularjs-nvd3-directives": "~0.0.7",
+    "angular-bootstrap": "~0.13.0"
   },
   "resolutions": {
     "angular": "~1.2.4",
