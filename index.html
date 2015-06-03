@@ -30,7 +30,7 @@
                     </span>
                   </div><!-- /input-group -->
                 </div>
-                <button class="btn btn-success">Add Effort</button>
+                <button class="btn btn-success" ng-click="reportCard.addEffort()">Add Effort</button>
               </form>
             </div>
           <div class="piechart col-md-8">
@@ -44,6 +44,19 @@
             <svg></svg>
             </nvd3-pie-chart>
           </div>
+        </div>
+        <div class="row-fluid">
+          <table class="table col-md-12" id="effortTable">
+          <thead>
+            <caption>Reported Effort</caption>
+            <tr><th ng-repeat="header in reportCard.headers">{{header}}</th></tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="effort in reportCard.efforts">
+              <td ng-repeat="category in effort">{{category.y}}</td>
+            </tr>
+          </tbody>
+          </table>
         </div>
       </div>
     </div>
