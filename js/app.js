@@ -1,5 +1,5 @@
-angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap'])
-  .controller('ReportCardCtrl', function() {
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io'])
+  .controller('ReportCardCtrl', function(OAuth) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
     reportCard.resetEffort = function() {
@@ -40,4 +40,14 @@ angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap'])
     reportCard.addEffort = function() {
       reportCard.efforts.push(angular.copy(reportCard.effort));
     }
+    reportCard.login = function() {
+      OAuth.popup('github');
+    };
+});
+
+app.config(function (OAuthProvider) {
+  OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
+  OAuthProvider.setHandler('github', function (OAuthData, $http) {
+    console.log(OAuthData.result);
   });
+});

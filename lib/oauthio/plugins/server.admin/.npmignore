@@ -1,7 +1,0 @@
-!/app/js
-!/app/css
-!/app/admin/js
-/app/coffee
-/app/less
-/app/admin/*.coffee
-/gruntConfig.js
