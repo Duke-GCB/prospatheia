@@ -15,11 +15,13 @@
   </head>
   <body>
     <div ng-controller="ReportCardCtrl as reportCard">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-12">
-            <button ng-click="reportCard.login()" class="btn btn-primary btn-large">Login</button>
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <span class="navbar-brand">ReportCard</span>
+          <button type="button" class="btn btn-default navbar-btn navbar-right" ng-click="reportCard.login()">Sign in</button>
         </div>
+      </nav>
+      <div class="container">
         <div class="row">
           <div class="controls col-md-4">
             <h3>Effort</h3>

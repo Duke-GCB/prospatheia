@@ -1,5 +1,5 @@
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io'])
-  .controller('ReportCardCtrl', function(OAuth) {
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule'])
+  .controller('ReportCardCtrl', function(OAuth, UserModelService) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
     reportCard.resetEffort = function() {
@@ -45,9 +45,36 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 });
 
-app.config(function (OAuthProvider) {
-  OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
-  OAuthProvider.setHandler('github', function (OAuthData, $http) {
-    console.log(OAuthData.result);
-  });
+var userModelService = angular.module('ReportCardUserModule', []).service('UserModelService', function($http) {
+  var githubRoot = 'https://api.github.com';
+  var localThis = this;
+  localThis.userModel = {};
+  this.getUserModel = function() {
+    return localThis.userModel;
+  };
+  this.setAccessToken = function(accessToken) {
+    localThis.userModel.accessToken = accessToken;
+    console.log('accessToken: ' + accessToken);
+  };
+  this.tokenAsParameter = function() {
+    return 'access_token=' + localThis.userModel.accessToken;
+  }
+  this.lookupUser = function() {
+    $http.get(githubRoot + '/user?' + this.tokenAsParameter())
+      .then(function(resp) {
+        console.log(resp);
+        localThis.userModel.user = resp.data.login;
+      });
+  };
 });
+
+app.config(['OAuthProvider', function (OAuthProvider) {
+  OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
+  OAuthProvider.setHandler('github', function (OAuthData, $http, UserModelService) {
+    console.log(OAuthData.result);
+    // save the token, get the userid
+    UserModelService.setAccessToken(OAuthData.result.access_token);
+    UserModelService.lookupUser();
+
+  });
+}]);
