@@ -1,5 +1,5 @@
 var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService) {
+  .controller('ReportCardCtrl', function(OAuth, UserModelService, $rootScope) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
     reportCard.resetEffort = function() {
@@ -43,28 +43,57 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.login = function() {
       OAuth.popup('github');
     };
+    $rootScope.$on('login', function(event) {
+      reportCard.user = UserModelService.getUserName();
+    });
 });
 
-var userModelService = angular.module('ReportCardUserModule', []).service('UserModelService', function($http) {
+var userModelService = angular.module('ReportCardUserModule', []).service('UserModelService', function($http, $rootScope) {
   var githubRoot = 'https://api.github.com';
   var localThis = this;
   localThis.userModel = {};
   this.getUserModel = function() {
     return localThis.userModel;
   };
+  this.getUserName = function() {
+    return localThis.userModel.user;
+  };
+  this.lookupUser = function(handler) {
+    var h = handler;
+    $http.get(githubRoot + '/user?' + this.tokenAsParameter())
+      .success(function(data) {
+        console.log(data);
+        localThis.userModel.user = data.login;
+        handler(null);
+      })
+      .error(function(data, status, headers, config) {
+        handler(data);
+      });
+  };
   this.setAccessToken = function(accessToken) {
     localThis.userModel.accessToken = accessToken;
     console.log('accessToken: ' + accessToken);
+    this.lookupUser();
   };
   this.tokenAsParameter = function() {
     return 'access_token=' + localThis.userModel.accessToken;
   }
-  this.lookupUser = function() {
-    $http.get(githubRoot + '/user?' + this.tokenAsParameter())
-      .then(function(resp) {
-        console.log(resp);
-        localThis.userModel.user = resp.data.login;
-      });
+  this.notifyLogin = function() {
+    $rootScope.$broadcast('login');
+  };
+  this.notifyError = function(error) {
+    // TODO: implement error
+  };
+  this.handleToken = function(accessToken) {
+    localThis.setAccessToken(accessToken);
+    var handler = f;
+    localThis.lookupUser(function(err) {
+      if(err) {
+        localThis.notifyError(err);
+      } else {
+        localThis.notifyLogin();
+      }
+    });
   };
 });
 
@@ -73,8 +102,7 @@ app.config(['OAuthProvider', function (OAuthProvider) {
   OAuthProvider.setHandler('github', function (OAuthData, $http, UserModelService) {
     console.log(OAuthData.result);
     // save the token, get the userid
-    UserModelService.setAccessToken(OAuthData.result.access_token);
-    UserModelService.lookupUser();
+    UserModelService.handleToken(OAuthData.result.access_token);
 
   });
 }]);
