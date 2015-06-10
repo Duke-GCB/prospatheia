@@ -18,8 +18,11 @@
       <nav class="navbar navbar-default">
         <div class="container-fluid">
           <span class="navbar-brand">ReportCard</span>
-          <button ng-hide="reportCard.user" type="button" class="btn btn-default navbar-btn navbar-right" ng-click="reportCard.login()">Sign in</button>
-          <span ng-show="reportCard.user">{{ reportCard.user }}</span>
+          <ul class="nav navbar-nav navbar-right">
+            <li><button ng-hide="reportCard.user" type="button" class="btn btn-default navbar-btn" ng-click="reportCard.login()">Sign in</button>
+            <li><p ng-show="reportCard.user" class="navbar-text">Signed in as: {{ reportCard.user }}</p></li>
+            <li><button ng-show="reportCard.user" type="button" class="btn btn-default navbar-btn" ng-click="reportCard.logout()">Sign Out</button>
+          </ul>
         </div>
       </nav>
       <div class="container">
