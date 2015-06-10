@@ -51,10 +51,10 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     reportCard.logout = function() {
-      reportCard.user = null;
+      UserModelService.logout();
     };
 
-    $rootScope.$on('login', function(event) {
+    $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
     });
 });
@@ -70,7 +70,7 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
 
   // Cookie handling
   this.loadCookies = function() {
-    var accessToken = $cookies.get('rcghAccessToken');
+    var accessToken = $cookies.rcghAccessToken;
     if(accessToken != null) {
       localThis.handleToken(accessToken);
     }
@@ -78,9 +78,14 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
 
   this.saveCookies = function() {
     if(localThis.userModel.accessToken != null) {
-      $cookies.put('rcghAccessToken', localThis.userModel.accessToken);
+      $cookies.rcghAccessToken = localThis.userModel.accessToken;
     }
   };
+
+  this.clearCookies = function () {
+    $cookies.rcghAccessToken = null;
+  };
+
   // GitHub API calls
   var githubRoot = 'https://api.github.com';
   this.lookupUser = function(callback) {
@@ -93,6 +98,13 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
         callback(data);
       });
   };
+
+  this.logout = function(callback) {
+    localThis.clearCookies();
+    localThis.userModel = {user: null, accessToken: null};
+    localThis.notifyUserChanged();
+  }
+
   this.setAccessToken = function(accessToken) {
     // TODO: store token in a cookie and recheck it later
     localThis.userModel.accessToken = accessToken;
@@ -101,8 +113,8 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
   this.tokenAsParameter = function() {
     return 'access_token=' + localThis.userModel.accessToken;
   }
-  this.notifyLogin = function() {
-    $rootScope.$broadcast('login');
+  this.notifyUserChanged = function() {
+    $rootScope.$broadcast('userChanged');
   };
   this.notifyError = function(error) {
     // TODO: implement error
@@ -113,7 +125,7 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
       if(err) {
         localThis.notifyError(err);
       } else {
-        localThis.notifyLogin();
+        localThis.notifyUserChanged();
       }
     });
   };
