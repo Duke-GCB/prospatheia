@@ -49,25 +49,38 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.login = function() {
       OAuth.popup('github');
     };
-    
+
     reportCard.logout = function() {
       reportCard.user = null;
     };
-    
+
     $rootScope.$on('login', function(event) {
       reportCard.user = UserModelService.getUserName();
     });
 });
 
-var userModelService = angular.module('ReportCardUserModule', []).service('UserModelService', function($http, $rootScope) {
+var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
   // Singleton data model object - stores user and token
   var localThis = this;
-  localThis.userModel = {};
+  localThis.userModel = {user: null, accessToken: null};
   // User is exposed publicly
   this.getUserName = function() {
     return localThis.userModel.user;
   };
-  
+
+  // Cookie handling
+  this.loadCookies = function() {
+    var accessToken = $cookies.get('rcghAccessToken');
+    if(accessToken != null) {
+      localThis.handleToken(accessToken);
+    }
+  };
+
+  this.saveCookies = function() {
+    if(localThis.userModel.accessToken != null) {
+      $cookies.put('rcghAccessToken', localThis.userModel.accessToken);
+    }
+  };
   // GitHub API calls
   var githubRoot = 'https://api.github.com';
   this.lookupUser = function(callback) {
@@ -83,6 +96,7 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
   this.setAccessToken = function(accessToken) {
     // TODO: store token in a cookie and recheck it later
     localThis.userModel.accessToken = accessToken;
+    localThis.saveCookies();
   };
   this.tokenAsParameter = function() {
     return 'access_token=' + localThis.userModel.accessToken;
@@ -103,6 +117,9 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
       }
     });
   };
+
+  // On startup, load cookies
+  this.loadCookies();
 });
 
 app.config(['OAuthProvider', function (OAuthProvider) {
