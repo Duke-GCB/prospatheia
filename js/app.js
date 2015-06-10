@@ -27,37 +27,49 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.increaseEffort = function(index) {
       changeEffort(index, 5);
     }
+
+    // D3 handling - functions to provide data values for x/y
     reportCard.xFunction = function() {
       return function(d) {
         return d.key;
       }
     };
+
     reportCard.yFunction = function() {
       return function(d) {
         return d.y;
       }
     };
+
+    // Add this effort to the list
     reportCard.addEffort = function() {
       reportCard.efforts.push(angular.copy(reportCard.effort));
     }
+
     reportCard.login = function() {
       OAuth.popup('github');
     };
+    
+    reportCard.logout = function() {
+      reportCard.user = null;
+    };
+    
     $rootScope.$on('login', function(event) {
       reportCard.user = UserModelService.getUserName();
     });
 });
 
 var userModelService = angular.module('ReportCardUserModule', []).service('UserModelService', function($http, $rootScope) {
-  var githubRoot = 'https://api.github.com';
+  // Singleton data model object - stores user and token
   var localThis = this;
   localThis.userModel = {};
-  this.getUserModel = function() {
-    return localThis.userModel;
-  };
+  // User is exposed publicly
   this.getUserName = function() {
     return localThis.userModel.user;
   };
+  
+  // GitHub API calls
+  var githubRoot = 'https://api.github.com';
   this.lookupUser = function(callback) {
     $http.get(githubRoot + '/user?' + this.tokenAsParameter())
       .success(function(data) {
@@ -69,6 +81,7 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
       });
   };
   this.setAccessToken = function(accessToken) {
+    // TODO: store token in a cookie and recheck it later
     localThis.userModel.accessToken = accessToken;
   };
   this.tokenAsParameter = function() {
@@ -95,8 +108,7 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
 app.config(['OAuthProvider', function (OAuthProvider) {
   OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
   OAuthProvider.setHandler('github', function (OAuthData, $http, UserModelService) {
-    // save the token, get the userid
+    // Received a token from GitHub, handle this
     UserModelService.handleToken(OAuthData.result.access_token);
-
   });
 }]);
