@@ -58,22 +58,18 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
   this.getUserName = function() {
     return localThis.userModel.user;
   };
-  this.lookupUser = function(handler) {
-    var h = handler;
+  this.lookupUser = function(callback) {
     $http.get(githubRoot + '/user?' + this.tokenAsParameter())
       .success(function(data) {
-        console.log(data);
         localThis.userModel.user = data.login;
-        handler(null);
+        callback();
       })
       .error(function(data, status, headers, config) {
-        handler(data);
+        callback(data);
       });
   };
   this.setAccessToken = function(accessToken) {
     localThis.userModel.accessToken = accessToken;
-    console.log('accessToken: ' + accessToken);
-    this.lookupUser();
   };
   this.tokenAsParameter = function() {
     return 'access_token=' + localThis.userModel.accessToken;
@@ -86,7 +82,6 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
   };
   this.handleToken = function(accessToken) {
     localThis.setAccessToken(accessToken);
-    var handler = f;
     localThis.lookupUser(function(err) {
       if(err) {
         localThis.notifyError(err);
@@ -100,7 +95,6 @@ var userModelService = angular.module('ReportCardUserModule', []).service('UserM
 app.config(['OAuthProvider', function (OAuthProvider) {
   OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
   OAuthProvider.setHandler('github', function (OAuthData, $http, UserModelService) {
-    console.log(OAuthData.result);
     // save the token, get the userid
     UserModelService.handleToken(OAuthData.result.access_token);
 
