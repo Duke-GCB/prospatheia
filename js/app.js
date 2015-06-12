@@ -1,5 +1,7 @@
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService, $rootScope) {
+var gitHubRoot = 'https://api.github.com';
+
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardGitHubAPIModule'])
+  .controller('ReportCardCtrl', function(OAuth, UserModelService, ReportCardGitHubAPIService, $rootScope) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
     reportCard.resetEffort = function() {
@@ -57,6 +59,13 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
     });
+
+    reportCard.loadData = function() {
+      ReportCardGitHubAPIService.loadFile(function(err, data) {
+        console.log(data);
+      })
+    };
+
 });
 
 var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
@@ -66,6 +75,11 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
   // User is exposed publicly
   this.getUserName = function() {
     return localThis.userModel.user;
+  };
+
+  // Token is also exposed
+  this.getAccessToken = function() {
+    return localThis.userModel.accessToken;
   };
 
   // Cookie handling
@@ -87,9 +101,8 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
   };
 
   // GitHub API calls
-  var githubRoot = 'https://api.github.com';
   this.lookupUser = function(callback) {
-    $http.get(githubRoot + '/user?' + this.tokenAsParameter())
+    $http.get(gitHubRoot + '/user?' + this.tokenAsParameter())
       .success(function(data) {
         localThis.userModel.user = data.login;
         callback();
@@ -141,3 +154,31 @@ app.config(['OAuthProvider', function (OAuthProvider) {
     UserModelService.handleToken(OAuthData.result.access_token);
   });
 }]);
+
+var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardUserModule']).service('ReportCardGitHubAPIService', function($http, $rootScope, $cookies, UserModelService) {
+  // exposes functions loadFile and commitFile
+  // https://developer.github.com/v3/repos/contents/#get-contents
+  // https://developer.github.com/v3/repos/contents/#update-a-file
+
+  var localThis = this;
+  this.owner = 'dleehr';
+  this.repo = 'csv-report-data';
+  this.path = 'data.csv';
+  localThis.loadFile = function(callback) {
+    var url = gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + localThis.path;
+    var config = {
+      'access_token' : UserModelService.getAccessToken(),
+      'headers': { 'Accept': 'application/vnd.github.VERSION.raw' } // Forces direct download
+      };
+    $http.get(url, config)
+      .success(function(data) {
+        callback(null, data);
+      })
+      .error(function(data, status, headers, config) {
+        callback(data);
+      });
+  };
+  localThis.commitFile = function(message) {
+  };
+});
+
