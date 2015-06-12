@@ -60,12 +60,29 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       reportCard.user = UserModelService.getUserName();
     });
 
+    // CSV data to<->from GitHub
+    reportCard.csvData = {sha: null, content: '', message: ''};
+
     reportCard.loadData = function() {
       ReportCardGitHubAPIService.loadFile(function(err, data) {
-        console.log(data);
-      })
+        reportCard.csvData.sha = data.sha;
+        reportCard.csvData.content = atob(data.content);
+      });
     };
 
+    reportCard.commitData = function() {
+      var encodedContent = btoa(reportCard.csvData.content);
+      var sha = reportCard.csvData.sha || '';
+      var message = reportCard.csvData.message || '';
+      if(sha.length == 0 || message.length == 0) {
+        // Handle error
+        return;
+      };
+      ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err, data) {
+        // handle the response
+        reportCard.loadData();
+      });
+    }
 });
 
 var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
@@ -161,7 +178,8 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
   // https://developer.github.com/v3/repos/contents/#update-a-file
 
   var localThis = this;
-  this.owner = 'dleehr';
+  // For testing purposes only - using a test account with no organization memberships, since we need full repo access
+  this.owner = 'Leehro';
   this.repo = 'csv-report-data';
   this.path = 'data.csv';
   this.buildURL = function() {
@@ -169,15 +187,11 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
   };
 
   this.buildConfig = function() {
-    return {'access_token' : UserModelService.getAccessToken(),
-            'headers':
-              { 'Accept': 'application/vnd.github.VERSION.raw' }// Forces direct download
-            }
+    return { 'headers' : { 'Authorization' :'token ' + UserModelService.getAccessToken() } };
   };
 
   this.loadFile = function(callback) {
     // GET /repos/:owner/:repo/contents/:path
-    // This needs to get the SHA too!
     $http.get(localThis.buildURL(), localThis.buildConfig())
       .success(function(data) {
         callback(null, data);
@@ -186,11 +200,11 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
         callback(data);
       });
   };
-  this.commitFile = function(content, message, callback) {
+  this.commitFile = function(content, message, sha, callback) {
     // PUT /repos/:owner/:repo/contents/:path
     var data = {
-      'message': message,
       'content': content, // must be base64-encoded
+      'message': message,
       'sha': sha
     };
     $http.put(localThis.buildURL(), data, localThis.buildConfig())
