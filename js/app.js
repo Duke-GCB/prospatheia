@@ -164,13 +164,21 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
   this.owner = 'dleehr';
   this.repo = 'csv-report-data';
   this.path = 'data.csv';
-  localThis.loadFile = function(callback) {
-    var url = gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + localThis.path;
-    var config = {
-      'access_token' : UserModelService.getAccessToken(),
-      'headers': { 'Accept': 'application/vnd.github.VERSION.raw' } // Forces direct download
-      };
-    $http.get(url, config)
+  this.buildURL = function() {
+    return gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + localThis.path;
+  };
+
+  this.buildConfig = function() {
+    return {'access_token' : UserModelService.getAccessToken(),
+            'headers':
+              { 'Accept': 'application/vnd.github.VERSION.raw' }// Forces direct download
+            }
+  };
+
+  this.loadFile = function(callback) {
+    // GET /repos/:owner/:repo/contents/:path
+    // This needs to get the SHA too!
+    $http.get(localThis.buildURL(), localThis.buildConfig())
       .success(function(data) {
         callback(null, data);
       })
@@ -178,7 +186,20 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
         callback(data);
       });
   };
-  localThis.commitFile = function(message) {
+  this.commitFile = function(content, message, callback) {
+    // PUT /repos/:owner/:repo/contents/:path
+    var data = {
+      'message': message,
+      'content': content, // must be base64-encoded
+      'sha': sha
+    };
+    $http.put(localThis.buildURL(), data, localThis.buildConfig())
+      .success(function(data) {
+        callback(null, data);
+      })
+      .error(function(data, status, headers, config) {
+        callback(data);
+      });
   };
 });
 
