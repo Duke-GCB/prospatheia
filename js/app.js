@@ -4,6 +4,19 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
   .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
+
+    // Headers, with display names
+    reportCard.csvHeaders = [
+      { key: "user", value: "User" },
+      { key: "startDate", value: "Start" },
+      { key: "endDate", value: "End" },
+      { key: "pctResDev", value: "% R&D" },
+      { key: "pctAdmin", value: "% Admin" },
+      { key: "pctCollabRes", value: "% Collab. Research" },
+      { key: "pctInfra", value: "% Infrastructure" },
+      { key: "pctTicket", value: "% Tickets" }
+    ];
+
     reportCard.resetEffort = function() {
       reportCard.effort = [
         {key: "R&D", y: 20},
@@ -14,7 +27,6 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       ];
     }
     reportCard.resetEffort();
-    reportCard.headers = reportCard.effort.map(function(e) { return e.key; } );
     reportCard.efforts = [];
 
     // Data-binding is to whole collection, not individual slices
@@ -43,9 +55,40 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       }
     };
 
+    // Private function to make a row object with provided data
+    var makeRow = function(user, startDate, endDate, effortArray) {
+      var row = {};
+      row.user = user;
+      row.startDate = startDate;
+      row.endDate = endDate;
+      // since effortArray is an array, we'll index it
+      var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
+      keys.forEach(function(key, keyIndex) {
+        if(key.indexOf('pct') == 0) {
+          row[key] = effortArray[keyIndex - 3].y;
+        }
+      });
+      return row;
+    };
+
+    // date should be a Date, and we'll convert it to 'YYYY-MM-DD'
+    var convertDate = function(date) {
+      return date.toISOString().substring(0,10);
+    };
+
+    reportCard.startDate = new Date('2015-05-01 EDT');
+    reportCard.endDate = new Date('2015-06-01 EDT');
+
     // Add this effort to the list
     reportCard.addEffort = function() {
-      reportCard.efforts.push(angular.copy(reportCard.effort));
+      // make a new object
+      var user = reportCard.user;
+      var startDate = convertDate(reportCard.startDate);
+      var endDate = convertDate(reportCard.endDate);
+      var effort = reportCard.effort;
+      var row = makeRow(user, startDate, endDate, effort);
+      reportCard.efforts.push(row);
+      reportCard.dirty = true;
     }
 
     reportCard.login = function() {
@@ -58,27 +101,39 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
+      reportCard.loadData();
     });
 
     // CSV data to<->from GitHub
-    reportCard.error = '';
+    // TODO: display error
+    reportCard.status = '';
+    reportCard.statusClass = ''
+    reportCard.dirty = false;
     reportCard.loadData = function() {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
-          reportCard.error = err;
+          reportCard.status = err;
+          reportCard.statusClass = 'alert-danger';
         } else {
-          reportCard.error = '';
-          reportCard.data = rows;
-          console.log(rows);
+          reportCard.status = 'Loaded data successfully';
+          reportCard.statusClass = 'alert-success';
+          reportCard.efforts = rows;
+          reportCard.dirty = false;
         }
       });
     };
 
     reportCard.commitData = function() {
-      reportCard.data.push({'col1':66, 'col2': 55});
-      CSVDataService.writeCSV(reportCard.data, function(err) {
+      if(!reportCard.dirty) {
+        // No changes
+          reportCard.status = 'No changes';
+          reportCard.statusClass = 'alert-info';
+        return;
+      }
+      CSVDataService.writeCSV(reportCard.efforts, function(err) {
         if(err) {
-          reportCard.error = err;
+          reportCard.status = err;
+          reportCard.statusClass = 'alert-danger';
         } else {
           reportCard.loadData(); // So that SHA is updated
         }
