@@ -105,10 +105,10 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     });
 
     // CSV data to<->from GitHub
-    // TODO: display error
     reportCard.status = '';
     reportCard.statusClass = ''
     reportCard.dirty = false;
+    reportCard.efforts = [];
     reportCard.loadData = function() {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
@@ -166,7 +166,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
       return;
     }
     // transform the JS Array back to CSV
-    var csv = d3.csv.format(rows);
+    var csv = d3.csv.format(angular.copy(rows)); // Copy to remove $$hashKey which is added by angular
     // Base64-encode it
     var encodedContent = btoa(csv);
     // Construct a commit message
