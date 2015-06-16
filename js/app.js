@@ -75,6 +75,14 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     reportCard.commitData = function() {
+      reportCard.data.push({'col1':66, 'col2': 55});
+      CSVDataService.writeCSV(reportCard.data, function(err) {
+        if(err) {
+          reportCard.error = err;
+        } else {
+          reportCard.loadData(); // So that SHA is updated
+        }
+      });
     };
 });
 
