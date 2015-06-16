@@ -1,7 +1,7 @@
 var gitHubRoot = 'https://api.github.com';
 
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardGitHubAPIModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService, ReportCardGitHubAPIService, $rootScope) {
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule'])
+  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
     reportCard.resetEffort = function() {
@@ -61,28 +61,62 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     });
 
     // CSV data to<->from GitHub
-    reportCard.csvData = {sha: null, content: '', message: ''};
-
+    reportCard.error = '';
     reportCard.loadData = function() {
-      ReportCardGitHubAPIService.loadFile(function(err, data) {
-        reportCard.csvData.sha = data.sha;
-        reportCard.csvData.content = atob(data.content);
+      CSVDataService.readCSV(function(err, rows) {
+        if(err) {
+          reportCard.error = err;
+        } else {
+          reportCard.error = '';
+          reportCard.data = rows;
+          console.log(rows);
+        }
       });
     };
 
     reportCard.commitData = function() {
-      var encodedContent = btoa(reportCard.csvData.content);
-      var sha = reportCard.csvData.sha || '';
-      var message = reportCard.csvData.message || '';
-      if(sha.length == 0 || message.length == 0) {
-        // Handle error
-        return;
-      };
-      ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err, data) {
-        // handle the response
-        reportCard.loadData();
-      });
+    };
+});
+
+// Actually depends on d3
+var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHubAPIModule','ReportCardUserModule']).service('CSVDataService', function(ReportCardGitHubAPIService, UserModelService) {
+  var localThis = this;
+  this.sha = ''; // SHA of the last-read file, initialized to empty string
+  this.readCSV = function(callback) { // callback args are (err, rows)
+    ReportCardGitHubAPIService.loadFile(function(err, data) {
+      if(err) {
+        callback(err);
+      } else {
+        localThis.sha = data.sha;
+        // Data comes from the service base64-encoded
+        var decodedContent = atob(data.content);
+        // Convert the csv text data to a JS Array
+        var rows = d3.csv.parse(decodedContent);
+        callback(null, rows);
+      }
+    });
+  };
+  this.writeCSV = function(rows, callback) { // callback args are (err)
+    var sha = localThis.sha || '';
+    if(sha.length == 0) {
+      callback('No SHA for previous file. Has the file been loaded first?');
+      return;
     }
+    // transform the JS Array back to CSV
+    var csv = d3.csv.format(rows);
+    // Base64-encode it
+    var encodedContent = btoa(csv);
+    // Construct a commit message
+    var message = 'Updates by ' + UserModelService.getUserName();
+    // Commit
+    ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err) {
+      if(err) {
+        callback(err);
+      } else {
+        callback(null);
+      }
+    });
+  };
 });
 
 var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
