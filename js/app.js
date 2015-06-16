@@ -152,7 +152,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
       } else {
         localThis.sha = data.sha;
         // Data comes from the service base64-encoded
-        var decodedContent = atob(data.content);
+        var decodedContent = atob(data.content.replace(/\s/g, ''));
         // Convert the csv text data to a JS Array
         var rows = d3.csv.parse(decodedContent);
         callback(null, rows);
