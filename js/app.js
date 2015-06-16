@@ -21,7 +21,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       reportCard.effort = [
         {key: "R&D", y: 20},
         {key: "Admin", y: 20},
-        {key: "Collaborative Research", y:20},
+        {key: "Collab. Research", y:20},
         {key: "Infrastructure", y: 20},
         {key: "Tickets", y: 20}
       ];
