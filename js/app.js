@@ -29,6 +29,23 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.resetEffort();
     reportCard.efforts = [];
 
+    // Date handling
+    // Date is stored internally as Date. We convert to 'YYYY-MM-DD' when saving to CSV
+
+    var convertDate = function(date) {
+      return date.toISOString().substring(0,10);
+    };
+
+    reportCard.startDate = new Date();
+    reportCard.endDate = new Date();
+    // Date pickers
+    reportCard.datePickerOpen = false;
+    reportCard.openDatePicker = function($event) {
+      $event.preventDefault();
+      $event.stopPropagation();
+      reportCard.datePickerOpen = true;
+    };
+
     // Data-binding is to whole collection, not individual slices
     var changeEffort = function(index, delta) {
       effort = angular.copy(reportCard.effort)
@@ -70,14 +87,6 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       });
       return row;
     };
-
-    // date should be a Date, and we'll convert it to 'YYYY-MM-DD'
-    var convertDate = function(date) {
-      return date.toISOString().substring(0,10);
-    };
-
-    reportCard.startDate = new Date('2015-05-01 EDT');
-    reportCard.endDate = new Date('2015-06-01 EDT');
 
     // Add this effort to the list
     reportCard.addEffort = function() {
