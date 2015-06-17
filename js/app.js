@@ -36,14 +36,17 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       return date.toISOString().substring(0,10);
     };
 
-    reportCard.startDate = new Date();
-    reportCard.endDate = new Date();
+    reportCard.dateModel = [
+      {'date':new Date(), 'open':false, 'label':'Start'},
+      {'date':new Date(), 'open':false, 'label':'End'}
+    ];
+
     // Date pickers
     reportCard.datePickerOpen = false;
-    reportCard.openDatePicker = function($event) {
+    reportCard.openDatePicker = function($event, dateModel) {
       $event.preventDefault();
       $event.stopPropagation();
-      reportCard.datePickerOpen = true;
+      dateModel.open = true;
     };
 
     // Data-binding is to whole collection, not individual slices
@@ -92,8 +95,8 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.addEffort = function() {
       // make a new object
       var user = reportCard.user;
-      var startDate = convertDate(reportCard.startDate);
-      var endDate = convertDate(reportCard.endDate);
+      var startDate = convertDate(reportCard.dateModel[0].date);
+      var endDate = convertDate(reportCard.dateModel[1].date);
       var effort = reportCard.effort;
       var row = makeRow(user, startDate, endDate, effort);
       reportCard.efforts.push(row);

@@ -34,19 +34,19 @@
           <div class="controls col-md-4">
             <h3>Effort</h3>
               <form class="form row">
-                <div class="col-md-6">
-                  <label class="control-label">Start</label>
+                <div class="col-md-6" ng-repeat="dateModel in reportCard.dateModel">
+                  <label class="control-label">{{dateModel.label}}</label>
                   <div class="input-group">
                     <input type="text"
                            class="form-control"
                            datepicker-popup
-                           ng-model="reportCard.startDate"
-                           is-open="reportCard.datePickerOpen"
+                           ng-model="dateModel.date"
+                           is-open="dateModel.open"
                            close-text="Close" />
                     <span class="input-group-btn">
                       <button type="button"
                               class="btn btn-default"
-                              ng-click="reportCard.openDatePicker($event)">
+                              ng-click="reportCard.openDatePicker($event, dateModel)">
                                 <i class="glyphicon glyphicon-calendar"></i></button>
                     </span>
                   </div>
