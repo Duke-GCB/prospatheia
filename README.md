@@ -1,4 +1,4 @@
 # reportcard
 Angular+d3 pie chart
 
-[dleehr.github.io/reportcard](https://dleehr.github.io/reportcard)
+[duke-gcb.github.io/reportcard](https://duke-gcb.github.io/reportcard)
