@@ -1,11 +1,15 @@
 <!doctype html>
-<html ng-app="reportcard">
+<html lang="en" ng-app="reportcard">
   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="lib/angular/angular.min.js"></script>
+    <script src="lib/angular-cookies/angular-cookies.min.js"></script>
     <script src="lib/d3/d3.min.js"></script>
     <script src="lib/nvd3/nv.d3.js"></script>
     <script src="lib/angularjs-nvd3-directives/dist/angularjs-nvd3-directives.min.js"></script>
-    <script src="lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="lib/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="lib/oauth-js/dist/oauth.min.js"></script>
     <script src="lib/angular-oauthio/dist/angular-oauth.io.js"></script>
     <script src="js/app.js"></script>
@@ -30,6 +34,23 @@
           <div class="controls col-md-4">
             <h3>Effort</h3>
               <form class="form row">
+                <div class="col-md-6" ng-repeat="dateModel in reportCard.dateModel">
+                  <label class="control-label">{{dateModel.label}}</label>
+                  <div class="input-group">
+                    <input type="text"
+                           class="form-control"
+                           datepicker-popup
+                           ng-model="dateModel.date"
+                           is-open="dateModel.open"
+                           close-text="Close" />
+                    <span class="input-group-btn">
+                      <button type="button"
+                              class="btn btn-default"
+                              ng-click="reportCard.openDatePicker($event, dateModel)">
+                                <i class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
+                  </div>
+                </div>
                 <div ng-repeat="category in reportCard.effort track by $index" class="form-group col-md-6">
                   <label class="control-label">{{category.key}}</label>
                   <div class="input-group">
@@ -65,14 +86,25 @@
           <table class="table table-striped col-md-12" id="effortTable">
           <thead>
             <caption>Reported Effort</caption>
-            <tr><th ng-repeat="header in reportCard.headers">{{header}}</th></tr>
+            <tr><th ng-repeat="field in reportCard.csvHeaders">{{field.value}}</th></tr>
           </thead>
           <tbody>
             <tr ng-repeat="effort in reportCard.efforts">
-              <td ng-repeat="category in effort">{{category.y}}</td>
+              <td ng-repeat="field in reportCard.csvHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
           </table>
+        </div>
+        <div class="row-fluid">
+          <span class="col-xs-12 col-md-8">
+            <div class="alert" ng-class="reportCard.statusClass">{{reportCard.status}}</div>
+          </span>
+          <span class="col-xs-12 col-md-2">
+            <button class="form-control btn btn-default btn-warning " ng-click="reportCard.loadData()">Reset</button>
+          </span>
+          <span class="col-xs-12 col-md-2">
+            <button class="form-control btn btn-default btn-success" ng-click="reportCard.commitData()">Save</button>
+          </span>
         </div>
       </div>
     </div>

@@ -14,18 +14,17 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "~1.4.0",
     "d3": "~3.5.5",
     "nvd3": "~1.7.1",
     "angularjs-nvd3-directives": "~0.0.7",
     "angular-bootstrap": "~0.13.0",
     "bootstrap": "~3.3.4",
     "angular-oauthio": "~0.0.2",
-    "oauthio": "~0.2.0",
-    "oauth-js": "~0.4.3"
+    "oauth-js": "~0.4.3",
+    "angular": "1.4.1",
+    "angular-cookies": "~1.4.1"
   },
   "resolutions": {
-    "angular": "~1.2.4",
     "nvd3": "~v1.1.15-beta",
     "d3": "~3.3.13"
   }
