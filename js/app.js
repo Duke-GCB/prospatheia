@@ -223,7 +223,7 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
 
   // Cookie handling
   this.loadCookies = function() {
-    var accessToken = $cookies.rcghAccessToken;
+    var accessToken = $cookies.get('rcghAccessToken');
     if(accessToken != null) {
       localThis.handleToken(accessToken);
     }
@@ -231,12 +231,12 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
 
   this.saveCookies = function() {
     if(localThis.userModel.accessToken != null) {
-      $cookies.rcghAccessToken = localThis.userModel.accessToken;
+      $cookies.put('rcghAccessToken',localThis.userModel.accessToken);
     }
   };
 
   this.clearCookies = function () {
-    $cookies.rcghAccessToken = null;
+    $cookies.remove('rcghAccessToken');
   };
 
   // GitHub API calls
