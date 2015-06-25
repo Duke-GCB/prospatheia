@@ -124,9 +124,20 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       UserModelService.logout();
     };
 
+    // The svg graph is sized based on its parent.
+    // Since its div container is initially hidden (ng-show="reportCard.user"),
+    // the svg is sized very small. When the container is hidden, the svg doesn't
+    // get resized automatically, so we trigger a window event on the next loop
+    reportCard.resize = function() {
+      setTimeout(function() {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
+    };
+
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
       reportCard.loadData();
+      reportCard.resize();
     });
 
     // CSV data to<->from GitHub
