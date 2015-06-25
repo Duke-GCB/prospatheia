@@ -51,7 +51,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     // Data-binding is to whole collection, not individual slices
     var changeEffort = function(index, delta) {
-      effort = angular.copy(reportCard.effort)
+      var effort = angular.copy(reportCard.effort)
       effort[index].y = effort[index].y + delta;
       reportCard.effort = effort;
     };
@@ -60,7 +60,20 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
     reportCard.increaseEffort = function(index) {
       changeEffort(index, 5);
-    }
+    };
+    reportCard.normalizeEffort = function() {
+      var total = reportCard.effort.map(function(each) {
+        return Number(each.y);
+      }).reduce(function(prev, curr) {
+        return prev + curr;
+      });
+      var factor = total / 100;
+      var normalized = angular.copy(reportCard.effort);
+      normalized.forEach(function(curr) {
+        curr.y = curr.y / factor;
+      });
+      reportCard.effort = normalized;
+    };
 
     // D3 handling - functions to provide data values for x/y
     reportCard.xFunction = function() {
