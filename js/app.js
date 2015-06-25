@@ -312,8 +312,8 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
 
   var localThis = this;
   // For testing purposes only - using a test account with no organization memberships, since we need full repo access
-  this.owner = 'Leehro';
-  this.repo = 'csv-report-data';
+  this.owner = 'Duke-GCB';
+  this.repo = 'reportcard-data';
   this.buildURL = function() {
     return gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + UserModelService.getUserName() + '.csv';
   };
