@@ -103,7 +103,7 @@
         </div>
         <div class="row-fluid">
           <span class="col-xs-12 col-md-8">
-            <div class="alert" ng-class="reportCard.statusClass">{{reportCard.status}}</div>
+            <div class="alert" ng-class="reportCard.getStatusClass()">{{reportCard.getStatusText()}}</div>
           </span>
           <span class="col-xs-12 col-md-2">
             <button class="form-control btn btn-default btn-warning " ng-click="reportCard.loadData()">Reset</button>
