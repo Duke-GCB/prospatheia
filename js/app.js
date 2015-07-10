@@ -128,6 +128,19 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       return row;
     };
 
+    var extractEffortValues = function(row) {
+      // Incoming row is an object that maps CSV fields to values
+      // This extracts the effort percentages in the same order as the CSV fields.
+      var extracted = [];
+      var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
+      keys.forEach(function(key, keyIndex) {
+        if(key.indexOf('pct') == 0) {
+          extracted.push(row[key]);
+        }
+      });
+      return extracted;
+    }
+
     // Add this effort to the list
     reportCard.addEffort = function() {
       // make a new object
@@ -140,6 +153,21 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       reportCard.dirty = true;
     }
 
+    // Sets effort in pie chart to the last effort
+    reportCard.defaultToLastEffort = function() {
+      if(reportCard.efforts.length > 0) {
+        // get the CSV-ready row
+        var lastEffortRow = reportCard.efforts[reportCard.efforts.length - 1];
+        // splice off the user, start, and end date
+        var lastEffortValues = extractEffortValues(lastEffortRow);
+        var effort = angular.copy(reportCard.effort);
+        // now inject the values into the effort array
+        lastEffortValues.forEach(function(currentValue, index) {
+          effort[index].y = currentValue;
+        });
+        reportCard.effort = effort;
+      }
+    };
     reportCard.login = function() {
       OAuth.popup('github');
     };
@@ -179,6 +207,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           reportCard.statusClass = 'alert-success';
           reportCard.efforts = rows;
           reportCard.dirty = false;
+          reportCard.defaultToLastEffort();
         }
       });
     };
