@@ -230,6 +230,22 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         }
       });
     };
+
+    reportCard.getStatusClass = function() {
+      if(reportCard.dirty) {
+        return 'alert-warning';
+       } else {
+        return reportCard.statusClass;
+       }
+    };
+
+    reportCard.getStatusText = function() {
+      if(reportCard.dirty) {
+        return 'Unsaved changes';
+       } else {
+        return reportCard.status;
+       }
+    };
 });
 
 // Actually depends on d3
