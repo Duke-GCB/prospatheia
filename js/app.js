@@ -19,11 +19,26 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     reportCard.resetEffort = function() {
       reportCard.effort = [
-        {key: "R&D", y: 20},
-        {key: "Admin", y: 20},
-        {key: "Collab. Research", y:20},
-        {key: "Infrastructure", y: 20},
-        {key: "Tickets", y: 20}
+        {key: "R&D",
+         y: 20,
+         title: "Research & Development",
+         summary: "Self-directed work, work initiated in Informatics, and professional development"},
+        {key: "Admin",
+         y: 20,
+         title: "Administrative",
+         summary: "Staff meetings, emails, administrative work, and HR-required training"},
+        {key: "Collab. Research",
+         y:20,
+         title: "Collaborative Projects",
+         summary: "Collaborative projects (even if they originated from tickets); typically includes intellectual contribution of some kind, in contrast to troubleshooting or fulfilling service requests"},
+        {key: "Infrastructure",
+         y: 20,
+         title: "Infrastructure Projects",
+         summary: "Physical or virtual work that affects multiple users (in contrast to an individual requestor on a ticket)"},
+        {key: "Tickets",
+         y: 20,
+         title: "Ticket-based Work",
+         summary: "Work responding to requests or reports sent to IT, in contrast to initiated in IT; includes such work even if not recorded in a ticket; should not include collaborative or infrastructure projects (which sometimes start as a ticket)"}
       ];
     }
     reportCard.resetEffort();
@@ -85,6 +100,15 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.yFunction = function() {
       return function(d) {
         return d.y;
+      }
+    };
+
+    reportCard.tooltipFunction = function() {
+      return function(key, x, y, e, graph) {
+        var title = reportCard.effort[y.pointIndex].title;
+        var summary = reportCard.effort[y.pointIndex].summary;
+        var tooltip = '<div class="report-card-tooltip"><p class="report-card-tooltip title">' + title +'</p><p class="report-card-tooltip summary">' + summary +'</p></div>';
+        return tooltip;
       }
     };
 
