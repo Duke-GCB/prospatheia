@@ -197,13 +197,13 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.statusClass = ''
     reportCard.dirty = false;
     reportCard.efforts = [];
-    reportCard.loadData = function() {
+    reportCard.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
           reportCard.status = err;
           reportCard.statusClass = 'alert-danger';
         } else {
-          reportCard.status = 'Loaded data successfully';
+          reportCard.status = successMessage || 'Loaded data successfully';
           reportCard.statusClass = 'alert-success';
           reportCard.efforts = rows;
           reportCard.dirty = false;
@@ -224,7 +224,9 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           reportCard.status = err;
           reportCard.statusClass = 'alert-danger';
         } else {
-          reportCard.loadData(); // So that SHA is updated
+          var dateString = new Date().toString();
+          // Call loadData so that we have the SHA of the data we just saved, and customize message
+          reportCard.loadData('Saved for ' + UserModelService.getUserName() + ' on ' + dateString);
         }
       });
     };
