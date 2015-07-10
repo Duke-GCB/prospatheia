@@ -163,7 +163,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         var effort = angular.copy(reportCard.effort);
         // now inject the values into the effort array
         lastEffortValues.forEach(function(currentValue, index) {
-          effort[index].y = currentValue;
+          effort[index].y = Number(currentValue);
         });
         reportCard.effort = effort;
       }
