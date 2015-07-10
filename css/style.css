@@ -1,1 +1,14 @@
+.report-card-tooltip {
+  width: 200px;
+}
+
+.report-card-tooltip .title {
+  font-weight: bold;
+  background-color: #eee;
+}
+
+.report-card-tooltip .summary {
+  white-space: normal;
+  text-align: left;
+}
 
