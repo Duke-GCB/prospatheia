@@ -91,12 +91,12 @@
         <div class="row-fluid">
           <table class="table table-striped col-md-12" id="effortTable">
           <thead>
-            <caption>Reported Effort</caption>
-            <tr><th ng-repeat="field in reportCard.csvHeaders">{{field.value}}</th></tr>
+            <caption>Reported Effort for {{ reportCard.user }}</caption>
+            <tr><th ng-repeat="field in reportCard.displayHeaders">{{field.value}}</th></tr>
           </thead>
           <tbody>
             <tr ng-repeat="effort in reportCard.efforts">
-              <td ng-repeat="field in reportCard.csvHeaders">{{effort[field.key]}}</td>
+              <td ng-repeat="field in reportCard.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
           </table>

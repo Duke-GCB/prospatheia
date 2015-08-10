@@ -17,6 +17,8 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       { key: "pctTicket", value: "% Tickets" }
     ];
 
+    reportCard.displayHeaders = reportCard.csvHeaders.splice(1);
+
     reportCard.resetEffort = function() {
       reportCard.effort = [
         {key: "R&D",
