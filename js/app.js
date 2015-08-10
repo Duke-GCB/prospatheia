@@ -104,6 +104,8 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       changeEffort(index, 5);
     };
     reportCard.normalizeEffort = function() {
+      // Normalization happens in two phases
+      // 1. scale to 100 and round to integer percentages
       var total = reportCard.effort.map(function(each) {
         return Number(each.y);
       }).reduce(function(prev, curr) {
@@ -112,8 +114,25 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       var factor = total / 100;
       var normalized = angular.copy(reportCard.effort);
       normalized.forEach(function(curr) {
-        curr.y = curr.y / factor;
+        curr.y = Math.round(curr.y / factor);
       });
+
+      // 2. If any rounding causes efforts not to add to 100, fix surpluses/shortfalls
+      var totals = function(effortArray) {
+        return effortArray.map(function(c) { return c.y; }).reduce(function(p,c) { return p+c; });
+      };
+
+      var surplus = totals(normalized) - 100; // Are we at exactly 100?
+      if(surplus != 0) { // If we're at 100, don't want to divide 0 by 0.
+        // If over 100, unit should be -1, otherwise +1
+        var unit = -(Math.abs(surplus) / surplus);
+        // Distribute the surplus or shortfall
+        for(var i=0;i<Math.abs(surplus);i++) {
+          // Add (or subtract) the unit to the efforts array,
+          // using modulo in case we have more surplus than efforts
+          normalized[i % normalized.length].y += unit;
+        }
+      }
       reportCard.effort = normalized;
     };
 
