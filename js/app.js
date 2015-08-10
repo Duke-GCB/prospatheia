@@ -321,18 +321,25 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.commitData = function() {
       if(!reportCard.dirty) {
         // No changes
-          reportCard.status = 'No changes';
-          reportCard.statusClass = 'alert-info';
+        reportCard.status = 'No changes';
+        reportCard.statusClass = 'alert-info';
         return;
       }
       CSVDataService.writeCSV(reportCard.efforts, function(err) {
+        // Clear out dirty regardless of success or failure
+        // Dirty controls the status box
+        reportCard.dirty = false;
         if(err) {
           reportCard.status = err;
           reportCard.statusClass = 'alert-danger';
         } else {
           var dateString = new Date().toString();
-          // Call loadData so that we have the SHA of the data we just saved, and customize message
-          reportCard.loadData('Saved for ' + UserModelService.getUserName() + ' on ' + dateString);
+          reportCard.status = 'Saved for ' + UserModelService.getUserName() + ' on ' + dateString;
+          // Previously was calling loadData here to update the SHA, but the API doesn't
+          // return the new SHA fast enough
+          reportCard.statusClass = 'alert-success';
+          reportCard.defaultToLastEffort();
+          reportCard.defaultToNextPeriod();
         }
       });
     };
@@ -361,7 +368,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
   this.readCSV = function(callback) { // callback args are (err, rows)
     ReportCardGitHubAPIService.loadFile(function(err, data) {
       if(err) {
-        callback(err);
+        callback(err.data.message);
       } else {
         localThis.sha = data.sha;
         // Data comes from the service base64-encoded
@@ -385,10 +392,16 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
     // Construct a commit message
     var message = 'Updates by ' + UserModelService.getUserName();
     // Commit
-    ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err) {
+    ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err, data) {
+      // Have to read the commit SHA out of data, since an immediate API call won't update
       if(err) {
-        callback(err);
+        var message = err.data.message;
+        if(err.status == 409) { // code 409 is a conflict
+          message = 'Error: the file on GitHub has changed since you loaded it. Please wait few seconds, reset, and try again. (' + message + ')';
+        }
+        callback(message);
       } else {
+        localThis.sha = data.content.sha;
         callback(null);
       }
     });
@@ -446,7 +459,6 @@ var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).ser
   }
 
   this.setAccessToken = function(accessToken) {
-    // TODO: store token in a cookie and recheck it later
     localThis.userModel.accessToken = accessToken;
     localThis.saveCookies();
   };
@@ -488,7 +500,6 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
   // https://developer.github.com/v3/repos/contents/#update-a-file
 
   var localThis = this;
-  // For testing purposes only - using a test account with no organization memberships, since we need full repo access
   this.owner = 'Duke-GCB';
   this.repo = 'reportcard-data';
   this.buildURL = function() {
@@ -506,7 +517,7 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
         callback(null, data);
       })
       .error(function(data, status, headers, config) {
-        callback(data);
+        callback({'data': data, 'status': status});
       });
   };
   this.commitFile = function(content, message, sha, callback) {
@@ -521,7 +532,7 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
         callback(null, data);
       })
       .error(function(data, status, headers, config) {
-        callback(data);
+        callback({'data': data, 'status': status});
       });
   };
 });
