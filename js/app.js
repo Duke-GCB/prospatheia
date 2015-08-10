@@ -57,21 +57,25 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       via http://stackoverflow.com/questions/17415579/how-to-iso-8601-format-a-date-with-timezone-offset-in-javascript
     */
 
-    var formatLocalDate = function(date) {
+    var pad = function(num) {
+      var norm = Math.abs(Math.floor(num));
+      return (norm < 10 ? '0' : '') + norm;
+    };
+
+    var formatTZO = function(date) {
       var tzo = -date.getTimezoneOffset(),
-        dif = tzo >= 0 ? '+' : '-',
-        pad = function(num) {
-            var norm = Math.abs(Math.floor(num));
-            return (norm < 10 ? '0' : '') + norm;
-        };
+        dif = tzo >= 0 ? '+' : '-';
+        return dif + pad(tzo / 60) + ':' + pad(tzo % 60);
+    }
+
+    var formatLocalDate = function(date) {
       return date.getFullYear()
           + '-' + pad(date.getMonth()+1)
           + '-' + pad(date.getDate())
           + 'T' + pad(date.getHours())
           + ':' + pad(date.getMinutes())
           + ':' + pad(date.getSeconds())
-          + dif + pad(tzo / 60)
-          + ':' + pad(tzo % 60);
+          + formatTZO(date);
     }
 
     reportCard.dateModel = [
@@ -191,6 +195,65 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         reportCard.effort = effort;
       }
     };
+
+    var daysBetween = function(startDate, endDate) {
+      var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+      return Math.round(Math.abs((startDate.getTime() - endDate.getTime())/(oneDay)));
+    };
+
+    // via http://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
+    var isValidDate = function(date) {
+      if ( Object.prototype.toString.call(date) === "[object Date]" ) {
+        // it is a date
+        if ( isNaN( date.getTime() ) ) {  // d.valueOf() could also work
+          // date is not valid
+          return false;
+        } else {
+          // date is valid
+          return true;
+        }
+      } else {
+        // not a date
+        return false;
+      }
+    };
+
+    // Sets dates to assume next period
+    reportCard.defaultToNextPeriod = function() {
+      if(reportCard.efforts.length == 0) {
+        // Can't calculate period without a report
+        return;
+      }
+      var lastEffortRow = reportCard.efforts[reportCard.efforts.length - 1];
+
+      // When reading dates in a format like '2015-08-10', they will be assumed UTC
+      // Unless we provide a timezone offset
+      var tzo = formatTZO(new Date());
+      var lastStartDate = new Date(lastEffortRow['startDate'] + 'T00:00:00' + tzo);
+      var lastEndDate = new Date(lastEffortRow['endDate'] + 'T00:00:00' + tzo);
+
+      if(!isValidDate(lastStartDate) || !isValidDate(lastEndDate)) {
+        // Can't calculate period without valid dates
+        return;
+      }
+      // Default startDate to lastEndDate + 1 day
+      var startDate = new Date(lastEndDate);
+      startDate.setDate(lastEndDate.getDate() + 1);
+
+      // Default endDate to startDate + last period
+      var lastPeriod = daysBetween(lastStartDate, lastEndDate);
+      var endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + lastPeriod);
+
+      var startDateObject = reportCard.dateModel[0]; // Contains date at .date
+      var endDateObject = reportCard.dateModel[1]; // Contains date at .date
+
+      // Now set the calculated dates into the model
+      startDateObject.date = startDate;
+      endDateObject.date = endDate;
+
+    };
+
     reportCard.login = function() {
       OAuth.popup('github');
     };
@@ -231,6 +294,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           reportCard.efforts = rows;
           reportCard.dirty = false;
           reportCard.defaultToLastEffort();
+          reportCard.defaultToNextPeriod();
         }
       });
     };
