@@ -48,8 +48,31 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     // Date is stored internally as Date. We convert to 'YYYY-MM-DD' when saving to CSV
 
     var convertDate = function(date) {
-      return date.toISOString().substring(0,10);
+      return formatLocalDate(date).substring(0,10);
     };
+
+    /*
+      Originally dates were converted to strings using date.toISOString(), but this uses
+      UTC, so could be off by a day. formatLocalDate() uses local timezone
+      via http://stackoverflow.com/questions/17415579/how-to-iso-8601-format-a-date-with-timezone-offset-in-javascript
+    */
+
+    var formatLocalDate = function(date) {
+      var tzo = -date.getTimezoneOffset(),
+        dif = tzo >= 0 ? '+' : '-',
+        pad = function(num) {
+            var norm = Math.abs(Math.floor(num));
+            return (norm < 10 ? '0' : '') + norm;
+        };
+      return date.getFullYear()
+          + '-' + pad(date.getMonth()+1)
+          + '-' + pad(date.getDate())
+          + 'T' + pad(date.getHours())
+          + ':' + pad(date.getMinutes())
+          + ':' + pad(date.getSeconds())
+          + dif + pad(tzo / 60)
+          + ':' + pad(tzo % 60);
+    }
 
     reportCard.dateModel = [
       {'date':new Date(), 'open':false, 'label':'Start'},
