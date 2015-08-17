@@ -389,6 +389,8 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
     }
     // transform the JS Array back to CSV
     var csv = d3.csv.format(angular.copy(rows)); // Copy to remove $$hashKey which is added by angular
+    // Add a newline at the end - d3.csv.format doesn't put newlines at end
+    csv = csv + '\n';
     // Base64-encode it
     var encodedContent = btoa(csv);
     // Construct a commit message
