@@ -1,4 +1,5 @@
-function EffortGroups() {
+var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('EffortGroupService', function() {
+  console.log("Initializing EffortGroups");
   var informaticsCategories = [
       { csvHeader: "pctResDev",
         shortlabel: "R&D",
@@ -36,4 +37,4 @@ function EffortGroups() {
       return [];
     }
   }
-}
+});
