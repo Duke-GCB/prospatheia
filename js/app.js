@@ -1,11 +1,12 @@
 var gitHubRoot = 'https://api.github.com';
 
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope) {
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule','ReportCardEffortGroupModule'])
+  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
     var reportCard = this;
     reportCard.title = 'GCB Effort Reporting';
 
     // Headers, with display names
+    // TODO: replace static data with that from EffortGroupService
     reportCard.csvHeaders = [
       { key: "user", value: "User" },
       { key: "startDate", value: "Start" },
