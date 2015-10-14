@@ -6,21 +6,24 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.title = 'GCB Effort Reporting';
 
     // Headers, with display names
-    // TODO: replace static data with that from EffortGroupService
-    reportCard.csvHeaders = [
-      { key: "user", value: "User" },
-      { key: "startDate", value: "Start" },
-      { key: "endDate", value: "End" },
-      { key: "pctResDev", value: "% R&D" },
-      { key: "pctAdmin", value: "% Admin" },
-      { key: "pctCollabRes", value: "% Collab. Research" },
-      { key: "pctInfra", value: "% Infrastructure" },
-      { key: "pctTicket", value: "% Tickets" }
-    ];
-
-    reportCard.displayHeaders = reportCard.csvHeaders.slice(1);
+    reportCard.loadCSVHeaders = function() {
+      // The CSV headers array is extracted from the groups
+      var csvHeaders = [
+        { key: "user", value: "User" },
+        { key: "startDate", value: "Start" },
+        { key: "endDate", value: "End" }
+      ];
+      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+      categories.forEach(function(category) {
+        csvHeaders.push({ key: category.csvHeader, value: category.shortLabel });
+      });
+      reportCard.csvHeaders = csvHeaders;
+      // For display purposes we don't show the user name
+      reportCard.displayHeaders = csvHeaders.slice(1);
+    };
 
     reportCard.resetEffort = function() {
+      // TODO: replace static data with that from EffortGroupService
       reportCard.effort = [
         {key: "R&D",
          y: 20,
@@ -43,8 +46,9 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
          title: "Ticket-based Work",
          summary: "Work responding to requests or reports sent to IT, in contrast to initiated in IT; includes such work even if not recorded in a ticket; should not include collaborative or infrastructure projects (which sometimes start as a ticket)"}
       ];
-    }
-    reportCard.resetEffort();
+    };
+
+    reportCard.csvHeaders = [];
     reportCard.efforts = [];
 
     // Date handling
@@ -296,6 +300,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
+      reportCard.loadCSVHeaders();
       reportCard.loadData();
       reportCard.resize();
     });
