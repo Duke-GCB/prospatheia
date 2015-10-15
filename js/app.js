@@ -3,7 +3,6 @@ var gitHubRoot = 'https://api.github.com';
 var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule','ReportCardEffortGroupModule'])
   .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
     var reportCard = this;
-    reportCard.title = 'GCB Effort Reporting';
 
     // Headers, with display names
     reportCard.loadCSVHeaders = function() {
@@ -23,33 +22,17 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     reportCard.resetEffort = function() {
-      // TODO: replace static data with that from EffortGroupService
-      reportCard.effort = [
-        {key: "R&D",
-         y: 20,
-         title: "Research & Development",
-         summary: "Self-directed work, work initiated in Informatics, and professional development"},
-        {key: "Admin",
-         y: 20,
-         title: "Administrative",
-         summary: "Staff meetings, emails, administrative work, and HR-required training"},
-        {key: "Collab. Research",
-         y:20,
-         title: "Collaborative Projects",
-         summary: "Collaborative projects (even if they originated from tickets); typically includes intellectual contribution of some kind, in contrast to troubleshooting or fulfilling service requests"},
-        {key: "Infrastructure",
-         y: 20,
-         title: "Infrastructure Projects",
-         summary: "Physical or virtual work that affects multiple users (in contrast to an individual requestor on a ticket)"},
-        {key: "Tickets",
-         y: 20,
-         title: "Ticket-based Work",
-         summary: "Work responding to requests or reports sent to IT, in contrast to initiated in IT; includes such work even if not recorded in a ticket; should not include collaborative or infrastructure projects (which sometimes start as a ticket)"}
-      ];
+      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+      var effort = categories.map(function(category) {
+        return { key: category.shortLabel,
+                 y: 1, // will be normalized
+                 title: category.longLabel,
+                 summary: category.summary};
+      });
+      reportCard.effort = effort;
+      reportCard.normalizeEffort();
     };
 
-    reportCard.csvHeaders = [];
-    reportCard.efforts = [];
 
     // Date handling
     // Date is stored internally as Date. We convert to 'YYYY-MM-DD' when saving to CSV
@@ -306,10 +289,6 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     });
 
     // CSV data to<->from GitHub
-    reportCard.status = '';
-    reportCard.statusClass = ''
-    reportCard.dirty = false;
-    reportCard.efforts = [];
     reportCard.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
@@ -320,6 +299,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           reportCard.statusClass = 'alert-success';
           reportCard.efforts = rows;
           reportCard.dirty = false;
+          reportCard.resetEffort();
           reportCard.defaultToLastEffort();
           reportCard.defaultToNextPeriod();
         }
@@ -367,6 +347,14 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         return reportCard.status;
        }
     };
+
+    // Initialization
+    reportCard.title = 'GCB Effort Reporting';
+    reportCard.status = '';
+    reportCard.statusClass = ''
+    reportCard.dirty = false;
+    reportCard.csvHeaders = [];
+    reportCard.efforts = [];
 });
 
 // Actually depends on d3
