@@ -1,5 +1,4 @@
 var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('EffortGroupService', function() {
-  console.log("Initializing EffortGroups");
   var informaticsCategories = [
       { csvHeader: "pctResDev",
         shortLabel: "R&D",
