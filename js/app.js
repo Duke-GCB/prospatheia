@@ -292,13 +292,27 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
-          reportCard.status = err;
-          reportCard.statusClass = 'alert-danger';
+          // GitHub will return 404 error for either Not Found or
+          // Private repo, we're not telling you.
+          // Optimistically we'll assume new user and if user
+          // does not have access to the repo, saving will fail later
+          if(err.status == 404) {
+            reportCard.status = 'No effort reported';
+            reportCard.statusClass = 'alert-info';
+            reportCard.efforts = [];
+            reportCard.dirty = false;
+            reportCard.csvFileExists = false;
+            reportCard.resetEffort();
+          } else {
+            reportCard.status = err.data.message;
+            reportCard.statusClass = 'alert-danger';
+          }
         } else {
           reportCard.status = successMessage || 'Loaded data successfully';
           reportCard.statusClass = 'alert-success';
           reportCard.efforts = rows;
           reportCard.dirty = false;
+          reportCard.csvFileExists = true;
           reportCard.resetEffort();
           reportCard.defaultToLastEffort();
           reportCard.defaultToNextPeriod();
@@ -313,7 +327,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         reportCard.statusClass = 'alert-info';
         return;
       }
-      CSVDataService.writeCSV(reportCard.efforts, function(err) {
+      CSVDataService.writeCSV(reportCard.efforts, reportCard.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
         reportCard.dirty = false;
@@ -326,6 +340,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           // Previously was calling loadData here to update the SHA, but the API doesn't
           // return the new SHA fast enough
           reportCard.statusClass = 'alert-success';
+          reportCard.csvFileExists = true;
           reportCard.defaultToLastEffort();
           reportCard.defaultToNextPeriod();
         }
@@ -353,6 +368,10 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.status = '';
     reportCard.statusClass = ''
     reportCard.dirty = false;
+    // Assume the file exists until we know it doesn't.
+    // This way, we can't accidentally clobber an existing file by not loading the previous
+    // version's SHA
+    reportCard.csvFileExists = false;
     reportCard.csvHeaders = [];
     reportCard.efforts = [];
 });
@@ -364,7 +383,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
   this.readCSV = function(callback) { // callback args are (err, rows)
     ReportCardGitHubAPIService.loadFile(function(err, data) {
       if(err) {
-        callback(err.data.message);
+        callback(err);
       } else {
         localThis.sha = data.sha;
         // Data comes from the service base64-encoded
@@ -375,9 +394,9 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
       }
     });
   };
-  this.writeCSV = function(rows, callback) { // callback args are (err)
+  this.writeCSV = function(rows, updateExistingFile, callback) { // callback args are (err)
     var sha = localThis.sha || '';
-    if(sha.length == 0) {
+    if(sha.length == 0 && updateExistingFile) {
       callback('No SHA for previous file. Has the file been loaded first?');
       return;
     }
@@ -396,6 +415,8 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
         var message = err.data.message;
         if(err.status == 409) { // code 409 is a conflict
           message = 'Error: the file on GitHub has changed since you loaded it. Please wait few seconds, reset, and try again. (' + message + ')';
+        } else if(err.status == 404) {
+          message = 'Your file could not be saved. Please contact your administrator to verify your GitHub account is configured for access.';
         }
         callback(message);
       } else {
