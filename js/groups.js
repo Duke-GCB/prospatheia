@@ -28,10 +28,25 @@ var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('Ef
         categories : informaticsCategories }
     ];
 
+  // Adapted from http://stackoverflow.com/a/1961068 by adding key
+  Array.prototype.getUnique = function(key){
+     var u = {}, a = [];
+     for(var i = 0, l = this.length; i < l; ++i){
+        if(u.hasOwnProperty(this[i][key])) {
+           continue;
+        }
+        a.push(this[i]);
+        u[this[i][key]] = 1;
+     }
+     return a;
+  }
+
   this.categoriesForUser = function(user) {
     var categories = [];
     var groups = this.groupsForUser(user);
     var categories = groups.map(function(group) { return group.categories; }).reduce(function(a,b) { return a.concat(b)});
+    // Now uniquify them
+    categories = categories.getUnique('csvHeader');
     return categories;
   }
 
