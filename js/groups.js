@@ -29,11 +29,12 @@ var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('Ef
     ];
 
   this.categoriesForUser = function(user) {
-    var group = this.groups.filter(function(group) { return group.members.indexOf(user) != -1; });
-    if(group.length > 0) {
-      return group[0].categories;
-    } else {
-      return [];
-    }
+    var categories = [];
+    var groups = this.groupsForUser(user);
+    var categories = groups.map(function(group) { return group.categories; }).reduce(function(a,b) { return a.concat(b)});
+    return categories;
+  }
+  this.groupsForUser = function(user) {
+    return this.groups.filter(function(group) { return group.members.indexOf(user) != -1; });
   }
 });
