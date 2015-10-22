@@ -175,7 +175,11 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
       keys.forEach(function(key, keyIndex) {
         if(key.indexOf('pct') == 0) {
-          extracted.push(row[key]);
+          var value = "0";
+          if(row.hasOwnProperty(key)) {
+            value = row[key];
+          }
+          extracted.push(value);
         }
       });
       return extracted;
