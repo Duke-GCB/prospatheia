@@ -159,11 +159,12 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       row.endDate = endDate;
       // since effortArray is an array, we'll index it
       var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
-      keys.forEach(function(key, keyIndex) {
-        if(key.indexOf('pct') == 0) {
-          row[key] = effortArray[keyIndex - 3].y;
-        }
-      });
+      // The keys array will be larger than the efforts array, since it includes
+      // user, groups, etc.
+      var offset = Object.keys(row).length;
+      for(var keyIndex=offset;keyIndex < keys.length;keyIndex++) {
+        row[keys[keyIndex]] = effortArray[keyIndex - offset].y;
+      }
       return row;
     };
 
