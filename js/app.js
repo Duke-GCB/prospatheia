@@ -9,6 +9,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       // The CSV headers array is extracted from the groups
       var csvHeaders = [
         { key: "user", value: "User" },
+        { key: "groups", value: "Group" },
         { key: "startDate", value: "Start" },
         { key: "endDate", value: "End" }
       ];
@@ -16,9 +17,10 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       categories.forEach(function(category) {
         csvHeaders.push({ key: category.csvHeader, value: category.shortLabel });
       });
+
       reportCard.csvHeaders = csvHeaders;
-      // For display purposes we don't show the user name
-      reportCard.displayHeaders = csvHeaders.slice(1);
+      // For display purposes we don't show the user name or groups
+      reportCard.displayHeaders = csvHeaders.slice(2);
     };
 
     reportCard.resetEffort = function() {
@@ -149,9 +151,10 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     // Private function to make a row object with provided data
-    var makeRow = function(user, startDate, endDate, effortArray) {
+    var makeRow = function(user, groups, startDate, endDate, effortArray) {
       var row = {};
       row.user = user;
+      row.groups = groups;
       row.startDate = startDate;
       row.endDate = endDate;
       // since effortArray is an array, we'll index it
@@ -181,10 +184,11 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.addEffort = function() {
       // make a new object
       var user = reportCard.user;
+      var groups = reportCard.groups.join(',');
       var startDate = convertDate(reportCard.dateModel[0].date);
       var endDate = convertDate(reportCard.dateModel[1].date);
       var effort = reportCard.effort;
-      var row = makeRow(user, startDate, endDate, effort);
+      var row = makeRow(user, groups, startDate, endDate, effort);
       reportCard.efforts.push(row);
       reportCard.dirty = true;
     }
@@ -283,6 +287,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
+      reportCard.groups = EffortGroupService.groupNamesForUser(reportCard.user);
       reportCard.loadCSVHeaders();
       reportCard.loadData();
       reportCard.resize();
@@ -555,4 +560,3 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
       });
   };
 });
-

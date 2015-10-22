@@ -23,7 +23,7 @@ var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('Ef
       ];
 
   this.groups = [
-      { group : 'informatics',
+      { name : 'informatics',
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
         categories : informaticsCategories }
     ];
@@ -34,6 +34,11 @@ var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('Ef
     var categories = groups.map(function(group) { return group.categories; }).reduce(function(a,b) { return a.concat(b)});
     return categories;
   }
+
+  this.groupNamesForUser = function(user) {
+    return this.groupsForUser.map(function(group) { return group.name; });
+  }
+
   this.groupsForUser = function(user) {
     return this.groups.filter(function(group) { return group.members.indexOf(user) != -1; });
   }
