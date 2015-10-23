@@ -51,7 +51,7 @@ var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('Ef
   }
 
   this.groupNamesForUser = function(user) {
-    return this.groupsForUser.map(function(group) { return group.name; });
+    return this.groupsForUser(user).map(function(group) { return group.name; });
   }
 
   this.groupsForUser = function(user) {
