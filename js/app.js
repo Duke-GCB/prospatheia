@@ -1,50 +1,40 @@
 var gitHubRoot = 'https://api.github.com';
 
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope) {
+var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule','ReportCardEffortGroupModule'])
+  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
     var reportCard = this;
-    reportCard.title = 'GCB Effort Reporting';
 
     // Headers, with display names
-    reportCard.csvHeaders = [
-      { key: "user", value: "User" },
-      { key: "startDate", value: "Start" },
-      { key: "endDate", value: "End" },
-      { key: "pctResDev", value: "% R&D" },
-      { key: "pctAdmin", value: "% Admin" },
-      { key: "pctCollabRes", value: "% Collab. Research" },
-      { key: "pctInfra", value: "% Infrastructure" },
-      { key: "pctTicket", value: "% Tickets" }
-    ];
+    reportCard.loadCSVHeaders = function() {
+      // The CSV headers array is extracted from the groups
+      var csvHeaders = [
+        { key: "user", value: "User" },
+        { key: "groups", value: "Group" },
+        { key: "startDate", value: "Start" },
+        { key: "endDate", value: "End" }
+      ];
+      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+      categories.forEach(function(category) {
+        csvHeaders.push({ key: category.csvHeader, value: category.shortLabel });
+      });
 
-    reportCard.displayHeaders = reportCard.csvHeaders.slice(1);
+      reportCard.csvHeaders = csvHeaders;
+      // For display purposes we don't show the user name or groups
+      reportCard.displayHeaders = csvHeaders.slice(2);
+    };
 
     reportCard.resetEffort = function() {
-      reportCard.effort = [
-        {key: "R&D",
-         y: 20,
-         title: "Research & Development",
-         summary: "Self-directed work, work initiated in Informatics, and professional development"},
-        {key: "Admin",
-         y: 20,
-         title: "Administrative",
-         summary: "Staff meetings, emails, administrative work, and HR-required training"},
-        {key: "Collab. Research",
-         y:20,
-         title: "Collaborative Projects",
-         summary: "Collaborative projects (even if they originated from tickets); typically includes intellectual contribution of some kind, in contrast to troubleshooting or fulfilling service requests"},
-        {key: "Infrastructure",
-         y: 20,
-         title: "Infrastructure Projects",
-         summary: "Physical or virtual work that affects multiple users (in contrast to an individual requestor on a ticket)"},
-        {key: "Tickets",
-         y: 20,
-         title: "Ticket-based Work",
-         summary: "Work responding to requests or reports sent to IT, in contrast to initiated in IT; includes such work even if not recorded in a ticket; should not include collaborative or infrastructure projects (which sometimes start as a ticket)"}
-      ];
-    }
-    reportCard.resetEffort();
-    reportCard.efforts = [];
+      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+      var effort = categories.map(function(category) {
+        return { key: category.shortLabel,
+                 y: 1, // will be normalized
+                 title: category.longLabel,
+                 summary: category.summary};
+      });
+      reportCard.effort = effort;
+      reportCard.normalizeEffort();
+    };
+
 
     // Date handling
     // Date is stored internally as Date. We convert to 'YYYY-MM-DD' when saving to CSV
@@ -161,18 +151,20 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     // Private function to make a row object with provided data
-    var makeRow = function(user, startDate, endDate, effortArray) {
+    var makeRow = function(user, groups, startDate, endDate, effortArray) {
       var row = {};
       row.user = user;
+      row.groups = groups;
       row.startDate = startDate;
       row.endDate = endDate;
       // since effortArray is an array, we'll index it
       var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
-      keys.forEach(function(key, keyIndex) {
-        if(key.indexOf('pct') == 0) {
-          row[key] = effortArray[keyIndex - 3].y;
-        }
-      });
+      // The keys array will be larger than the efforts array, since it includes
+      // user, groups, etc.
+      var offset = Object.keys(row).length;
+      for(var keyIndex=offset;keyIndex < keys.length;keyIndex++) {
+        row[keys[keyIndex]] = effortArray[keyIndex - offset].y;
+      }
       return row;
     };
 
@@ -183,7 +175,11 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
       keys.forEach(function(key, keyIndex) {
         if(key.indexOf('pct') == 0) {
-          extracted.push(row[key]);
+          var value = "0";
+          if(row.hasOwnProperty(key)) {
+            value = row[key];
+          }
+          extracted.push(value);
         }
       });
       return extracted;
@@ -193,10 +189,11 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     reportCard.addEffort = function() {
       // make a new object
       var user = reportCard.user;
+      var groups = reportCard.groups.join(',');
       var startDate = convertDate(reportCard.dateModel[0].date);
       var endDate = convertDate(reportCard.dateModel[1].date);
       var effort = reportCard.effort;
-      var row = makeRow(user, startDate, endDate, effort);
+      var row = makeRow(user, groups, startDate, endDate, effort);
       reportCard.efforts.push(row);
       reportCard.dirty = true;
     }
@@ -295,25 +292,38 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     $rootScope.$on('userChanged', function(event) {
       reportCard.user = UserModelService.getUserName();
+      reportCard.groups = EffortGroupService.groupNamesForUser(reportCard.user);
+      reportCard.loadCSVHeaders();
       reportCard.loadData();
       reportCard.resize();
     });
 
     // CSV data to<->from GitHub
-    reportCard.status = '';
-    reportCard.statusClass = ''
-    reportCard.dirty = false;
-    reportCard.efforts = [];
     reportCard.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
-          reportCard.status = err;
-          reportCard.statusClass = 'alert-danger';
+          // GitHub will return 404 error for either Not Found or
+          // Private repo, we're not telling you.
+          // Optimistically we'll assume new user and if user
+          // does not have access to the repo, saving will fail later
+          if(err.status == 404) {
+            reportCard.status = 'No effort reported';
+            reportCard.statusClass = 'alert-info';
+            reportCard.efforts = [];
+            reportCard.dirty = false;
+            reportCard.csvFileExists = false;
+            reportCard.resetEffort();
+          } else {
+            reportCard.status = err.data.message;
+            reportCard.statusClass = 'alert-danger';
+          }
         } else {
           reportCard.status = successMessage || 'Loaded data successfully';
           reportCard.statusClass = 'alert-success';
           reportCard.efforts = rows;
           reportCard.dirty = false;
+          reportCard.csvFileExists = true;
+          reportCard.resetEffort();
           reportCard.defaultToLastEffort();
           reportCard.defaultToNextPeriod();
         }
@@ -327,7 +337,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         reportCard.statusClass = 'alert-info';
         return;
       }
-      CSVDataService.writeCSV(reportCard.efforts, function(err) {
+      CSVDataService.writeCSV(reportCard.efforts, reportCard.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
         reportCard.dirty = false;
@@ -340,6 +350,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           // Previously was calling loadData here to update the SHA, but the API doesn't
           // return the new SHA fast enough
           reportCard.statusClass = 'alert-success';
+          reportCard.csvFileExists = true;
           reportCard.defaultToLastEffort();
           reportCard.defaultToNextPeriod();
         }
@@ -361,6 +372,18 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         return reportCard.status;
        }
     };
+
+    // Initialization
+    reportCard.title = 'GCB Effort Reporting';
+    reportCard.status = '';
+    reportCard.statusClass = ''
+    reportCard.dirty = false;
+    // Assume the file exists until we know it doesn't.
+    // This way, we can't accidentally clobber an existing file by not loading the previous
+    // version's SHA
+    reportCard.csvFileExists = false;
+    reportCard.csvHeaders = [];
+    reportCard.efforts = [];
 });
 
 // Actually depends on d3
@@ -370,7 +393,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
   this.readCSV = function(callback) { // callback args are (err, rows)
     ReportCardGitHubAPIService.loadFile(function(err, data) {
       if(err) {
-        callback(err.data.message);
+        callback(err);
       } else {
         localThis.sha = data.sha;
         // Data comes from the service base64-encoded
@@ -381,9 +404,9 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
       }
     });
   };
-  this.writeCSV = function(rows, callback) { // callback args are (err)
+  this.writeCSV = function(rows, updateExistingFile, callback) { // callback args are (err)
     var sha = localThis.sha || '';
-    if(sha.length == 0) {
+    if(sha.length == 0 && updateExistingFile) {
       callback('No SHA for previous file. Has the file been loaded first?');
       return;
     }
@@ -402,6 +425,8 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
         var message = err.data.message;
         if(err.status == 409) { // code 409 is a conflict
           message = 'Error: the file on GitHub has changed since you loaded it. Please wait few seconds, reset, and try again. (' + message + ')';
+        } else if(err.status == 404) {
+          message = 'Your file could not be saved. Please contact your administrator to verify your GitHub account is configured for access.';
         }
         callback(message);
       } else {
@@ -540,4 +565,3 @@ var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardU
       });
   };
 });
-
