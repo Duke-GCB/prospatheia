@@ -8,4 +8,4 @@ Uses [AngularJS](https://angularjs.org), [nvd3](http://nvd3.org), and [GitHub](h
 
 ## Screenshot
 
-![prospatheia screenshot](/prospatheia-screenshot-1x.png "Reportcard screenshot")
+![prospatheia screenshot](/prospatheia-screenshot-1x.png "Prospatheia screenshot")
