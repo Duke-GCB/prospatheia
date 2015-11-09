@@ -1,4 +1,4 @@
-var effortGroups = angular.module('ReportCardEffortGroupModule', []).service('EffortGroupService', function() {
+var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('EffortGroupService', function() {
   var informaticsCategories = [
       { csvHeader: "pctResDev",
         shortLabel: "R&D",

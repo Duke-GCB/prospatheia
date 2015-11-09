@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app="reportcard">
+<html lang="en" ng-app="prospatheia">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -19,23 +19,23 @@
     <link rel="stylesheet" href="css/style.css"/>
   </head>
   <body>
-    <div ng-controller="ReportCardCtrl as reportCard">
+    <div ng-controller="ProspatheiaCtrl as prospatheia">
       <nav class="navbar navbar-default">
         <div class="container-fluid">
-          <span class="navbar-brand">ReportCard</span>
+          <span class="navbar-brand">Prospatheia</span>
           <ul class="nav navbar-nav navbar-right">
-            <li><button ng-hide="reportCard.user" type="button" class="btn btn-default navbar-btn" ng-click="reportCard.login()">Sign in</button>
-            <li><p ng-show="reportCard.user" class="navbar-text">Signed in as: {{ reportCard.user }}</p></li>
-            <li><button ng-show="reportCard.user" type="button" class="btn btn-default navbar-btn" ng-click="reportCard.logout()">Sign Out</button>
+            <li><button ng-hide="prospatheia.user" type="button" class="btn btn-default navbar-btn" ng-click="prospatheia.login()">Sign in</button>
+            <li><p ng-show="prospatheia.user" class="navbar-text">Signed in as: {{ prospatheia.user }}</p></li>
+            <li><button ng-show="prospatheia.user" type="button" class="btn btn-default navbar-btn" ng-click="prospatheia.logout()">Sign Out</button>
           </ul>
         </div>
       </nav>
-      <div class="container" ng-show="reportCard.user">
+      <div class="container" ng-show="prospatheia.user">
         <div class="row">
           <div class="controls col-md-4">
             <h3>Effort</h3>
               <form class="form row">
-                <div class="col-md-6" ng-repeat="dateModel in reportCard.dateModel">
+                <div class="col-md-6" ng-repeat="dateModel in prospatheia.dateModel">
                   <label class="control-label">{{dateModel.label}}</label>
                   <div class="input-group">
                     <input type="text"
@@ -47,44 +47,44 @@
                     <span class="input-group-btn">
                       <button type="button"
                               class="btn btn-default"
-                              ng-click="reportCard.openDatePicker($event, dateModel)">
+                              ng-click="prospatheia.openDatePicker($event, dateModel)">
                                 <i class="glyphicon glyphicon-calendar"></i></button>
                     </span>
                   </div>
                 </div>
-                <div ng-repeat="category in reportCard.effort track by $index" class="form-group col-md-6">
+                <div ng-repeat="category in prospatheia.effort track by $index" class="form-group col-md-6">
                   <label class="control-label">{{category.key}}</label>
                   <div class="input-group">
                     <span class="input-group-btn">
-                      <button class="btn btn-info" role="button" ng-click="reportCard.reduceEffort($index)">-</button>
+                      <button class="btn btn-info" role="button" ng-click="prospatheia.reduceEffort($index)">-</button>
                     </span>
                   <input type="text" class="form-control" ng-model="category.y"></input>
                     <span class="input-group-btn">
-                      <button class="btn btn-info" role="button" ng-click="reportCard.increaseEffort($index)">+</button>
+                      <button class="btn btn-info" role="button" ng-click="prospatheia.increaseEffort($index)">+</button>
                     </span>
                   </div><!-- /input-group -->
                 </div>
                 <div class="form-group col-md-6">
                   <label class="control-label">&nbsp;</label>
-                  <button class="form-control btn btn-info" ng-click="reportCard.normalizeEffort()">Normalize</button>
+                  <button class="form-control btn btn-info" ng-click="prospatheia.normalizeEffort()">Normalize</button>
                 </div>
                 <div class="form-group col-md-12">
                   <label class="control-label">&nbsp;</label>
-                  <button class="form-control btn btn-success" ng-click="reportCard.addEffort()">Add Effort</button>
+                  <button class="form-control btn btn-success" ng-click="prospatheia.addEffort()">Add Effort</button>
                 </div>
               </form>
             </div>
           <div class="piechart col-md-8">
             <nvd3-pie-chart
-              data="reportCard.effort"
-              id="reportCardPieChart"
-              x="reportCard.xFunction()"
-              y="reportCard.yFunction()"
+              data="prospatheia.effort"
+              id="prospatheiaPieChart"
+              x="prospatheia.xFunction()"
+              y="prospatheia.yFunction()"
               height="500"
               showLabels="true"
               interactive="true"
               tooltips="true"
-              tooltipcontent="reportCard.tooltipFunction()">
+              tooltipcontent="prospatheia.tooltipFunction()">
             <svg></svg>
             </nvd3-pie-chart>
           </div>
@@ -92,29 +92,29 @@
         <div class="row-fluid">
           <table class="table table-striped col-md-12" id="effortTable">
           <thead>
-            <caption>Reported Effort for {{ reportCard.user }}</caption>
-            <tr><th ng-repeat="field in reportCard.displayHeaders">{{field.value}}</th></tr>
+            <caption>Reported Effort for {{ prospatheia.user }}</caption>
+            <tr><th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th></tr>
           </thead>
           <tbody>
-            <tr ng-repeat="effort in reportCard.efforts">
-              <td ng-repeat="field in reportCard.displayHeaders">{{effort[field.key]}}</td>
+            <tr ng-repeat="effort in prospatheia.efforts">
+              <td ng-repeat="field in prospatheia.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
           </table>
         </div>
         <div class="row-fluid">
           <span class="col-xs-12 col-md-8">
-            <div class="alert" ng-class="reportCard.getStatusClass()">{{reportCard.getStatusText()}}</div>
+            <div class="alert" ng-class="prospatheia.getStatusClass()">{{prospatheia.getStatusText()}}</div>
           </span>
           <span class="col-xs-12 col-md-2">
-            <button class="form-control btn btn-default btn-warning " ng-click="reportCard.loadData()">Reset</button>
+            <button class="form-control btn btn-default btn-warning " ng-click="prospatheia.loadData()">Reset</button>
           </span>
           <span class="col-xs-12 col-md-2">
-            <button class="form-control btn btn-default btn-success" ng-click="reportCard.commitData()">Save</button>
+            <button class="form-control btn btn-default btn-success" ng-click="prospatheia.commitData()">Save</button>
           </span>
         </div>
       </div>
-      <div class="container" ng-hide="reportCard.user">
+      <div class="container" ng-hide="prospatheia.user">
         <div class="row">
           <h2 class="text-center">Please Sign in</h2>
           <p class="text-center">This application stores data in a private GitHub repository, and requires authorization to your GitHub account</p>
