@@ -1,11 +1,11 @@
 var gitHubRoot = 'https://api.github.com';
 
-var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ReportCardUserModule','ReportCardCSVDataModule','ReportCardEffortGroupModule'])
-  .controller('ReportCardCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
-    var reportCard = this;
+var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ProspatheiaUserModule','ProspatheiaCSVDataModule','ProspatheiaEffortGroupModule'])
+  .controller('ProspatheiaCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
+    var prospatheia = this;
 
     // Headers, with display names
-    reportCard.loadCSVHeaders = function() {
+    prospatheia.loadCSVHeaders = function() {
       // The CSV headers array is extracted from the groups
       var csvHeaders = [
         { key: "user", value: "User" },
@@ -13,26 +13,26 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
         { key: "startDate", value: "Start" },
         { key: "endDate", value: "End" }
       ];
-      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+      var categories = EffortGroupService.categoriesForUser(prospatheia.user);
       categories.forEach(function(category) {
         csvHeaders.push({ key: category.csvHeader, value: category.shortLabel });
       });
 
-      reportCard.csvHeaders = csvHeaders;
+      prospatheia.csvHeaders = csvHeaders;
       // For display purposes we don't show the user name or groups
-      reportCard.displayHeaders = csvHeaders.slice(2);
+      prospatheia.displayHeaders = csvHeaders.slice(2);
     };
 
-    reportCard.resetEffort = function() {
-      var categories = EffortGroupService.categoriesForUser(reportCard.user);
+    prospatheia.resetEffort = function() {
+      var categories = EffortGroupService.categoriesForUser(prospatheia.user);
       var effort = categories.map(function(category) {
         return { key: category.shortLabel,
                  y: 1, // will be normalized
                  title: category.longLabel,
                  summary: category.summary};
       });
-      reportCard.effort = effort;
-      reportCard.normalizeEffort();
+      prospatheia.effort = effort;
+      prospatheia.normalizeEffort();
     };
 
 
@@ -70,14 +70,14 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           + formatTZO(date);
     }
 
-    reportCard.dateModel = [
+    prospatheia.dateModel = [
       {'date':new Date(), 'open':false, 'label':'Start'},
       {'date':new Date(), 'open':false, 'label':'End'}
     ];
 
     // Date pickers
-    reportCard.datePickerOpen = false;
-    reportCard.openDatePicker = function($event, dateModel) {
+    prospatheia.datePickerOpen = false;
+    prospatheia.openDatePicker = function($event, dateModel) {
       $event.preventDefault();
       $event.stopPropagation();
       dateModel.open = true;
@@ -85,26 +85,26 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     // Data-binding is to whole collection, not individual slices
     var changeEffort = function(index, delta) {
-      var effort = angular.copy(reportCard.effort)
+      var effort = angular.copy(prospatheia.effort)
       effort[index].y = effort[index].y + delta;
-      reportCard.effort = effort;
+      prospatheia.effort = effort;
     };
-    reportCard.reduceEffort = function(index) {
+    prospatheia.reduceEffort = function(index) {
       changeEffort(index, -5);
     };
-    reportCard.increaseEffort = function(index) {
+    prospatheia.increaseEffort = function(index) {
       changeEffort(index, 5);
     };
-    reportCard.normalizeEffort = function() {
+    prospatheia.normalizeEffort = function() {
       // Normalization happens in two phases
       // 1. scale to 100 and round to integer percentages
-      var total = reportCard.effort.map(function(each) {
+      var total = prospatheia.effort.map(function(each) {
         return Number(each.y);
       }).reduce(function(prev, curr) {
         return prev + curr;
       });
       var factor = total / 100;
-      var normalized = angular.copy(reportCard.effort);
+      var normalized = angular.copy(prospatheia.effort);
       normalized.forEach(function(curr) {
         curr.y = Math.round(curr.y / factor);
       });
@@ -125,27 +125,27 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           normalized[i % normalized.length].y += unit;
         }
       }
-      reportCard.effort = normalized;
+      prospatheia.effort = normalized;
     };
 
     // D3 handling - functions to provide data values for x/y
-    reportCard.xFunction = function() {
+    prospatheia.xFunction = function() {
       return function(d) {
         return d.key;
       }
     };
 
-    reportCard.yFunction = function() {
+    prospatheia.yFunction = function() {
       return function(d) {
         return d.y;
       }
     };
 
-    reportCard.tooltipFunction = function() {
+    prospatheia.tooltipFunction = function() {
       return function(key, x, y, e, graph) {
-        var title = reportCard.effort[y.pointIndex].title;
-        var summary = reportCard.effort[y.pointIndex].summary;
-        var tooltip = '<div class="report-card-tooltip"><p class="report-card-tooltip title">' + title +'</p><p class="report-card-tooltip summary">' + summary +'</p></div>';
+        var title = prospatheia.effort[y.pointIndex].title;
+        var summary = prospatheia.effort[y.pointIndex].summary;
+        var tooltip = '<div class="prospatheia-tooltip"><p class="prospatheia-tooltip title">' + title +'</p><p class="prospatheia-tooltip summary">' + summary +'</p></div>';
         return tooltip;
       }
     };
@@ -158,7 +158,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       row.startDate = startDate;
       row.endDate = endDate;
       // since effortArray is an array, we'll index it
-      var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
+      var keys = prospatheia.csvHeaders.map(function(header) { return header.key; });
       // The keys array will be larger than the efforts array, since it includes
       // user, groups, etc.
       var offset = Object.keys(row).length;
@@ -172,7 +172,7 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       // Incoming row is an object that maps CSV fields to values
       // This extracts the effort percentages in the same order as the CSV fields.
       var extracted = [];
-      var keys = reportCard.csvHeaders.map(function(header) { return header.key; });
+      var keys = prospatheia.csvHeaders.map(function(header) { return header.key; });
       keys.forEach(function(key, keyIndex) {
         if(key.indexOf('pct') == 0) {
           var value = "0";
@@ -186,31 +186,31 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     }
 
     // Add this effort to the list
-    reportCard.addEffort = function() {
+    prospatheia.addEffort = function() {
       // make a new object
-      var user = reportCard.user;
-      var groups = reportCard.groups.join(',');
-      var startDate = convertDate(reportCard.dateModel[0].date);
-      var endDate = convertDate(reportCard.dateModel[1].date);
-      var effort = reportCard.effort;
+      var user = prospatheia.user;
+      var groups = prospatheia.groups.join(',');
+      var startDate = convertDate(prospatheia.dateModel[0].date);
+      var endDate = convertDate(prospatheia.dateModel[1].date);
+      var effort = prospatheia.effort;
       var row = makeRow(user, groups, startDate, endDate, effort);
-      reportCard.efforts.push(row);
-      reportCard.dirty = true;
+      prospatheia.efforts.push(row);
+      prospatheia.dirty = true;
     }
 
     // Sets effort in pie chart to the last effort
-    reportCard.defaultToLastEffort = function() {
-      if(reportCard.efforts.length > 0) {
+    prospatheia.defaultToLastEffort = function() {
+      if(prospatheia.efforts.length > 0) {
         // get the CSV-ready row
-        var lastEffortRow = reportCard.efforts[reportCard.efforts.length - 1];
+        var lastEffortRow = prospatheia.efforts[prospatheia.efforts.length - 1];
         // splice off the user, start, and end date
         var lastEffortValues = extractEffortValues(lastEffortRow);
-        var effort = angular.copy(reportCard.effort);
+        var effort = angular.copy(prospatheia.effort);
         // now inject the values into the effort array
         lastEffortValues.forEach(function(currentValue, index) {
           effort[index].y = Number(currentValue);
         });
-        reportCard.effort = effort;
+        prospatheia.effort = effort;
       }
     };
 
@@ -237,12 +237,12 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
     };
 
     // Sets dates to assume next period
-    reportCard.defaultToNextPeriod = function() {
-      if(reportCard.efforts.length == 0) {
+    prospatheia.defaultToNextPeriod = function() {
+      if(prospatheia.efforts.length == 0) {
         // Can't calculate period without a report
         return;
       }
-      var lastEffortRow = reportCard.efforts[reportCard.efforts.length - 1];
+      var lastEffortRow = prospatheia.efforts[prospatheia.efforts.length - 1];
 
       // When reading dates in a format like '2015-08-10', they will be assumed UTC
       // Unless we provide a timezone offset
@@ -263,8 +263,8 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
       var endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + lastPeriod);
 
-      var startDateObject = reportCard.dateModel[0]; // Contains date at .date
-      var endDateObject = reportCard.dateModel[1]; // Contains date at .date
+      var startDateObject = prospatheia.dateModel[0]; // Contains date at .date
+      var endDateObject = prospatheia.dateModel[1]; // Contains date at .date
 
       // Now set the calculated dates into the model
       startDateObject.date = startDate;
@@ -272,34 +272,34 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
 
     };
 
-    reportCard.login = function() {
+    prospatheia.login = function() {
       OAuth.popup('github');
     };
 
-    reportCard.logout = function() {
+    prospatheia.logout = function() {
       UserModelService.logout();
     };
 
     // The svg graph is sized based on its parent.
-    // Since its div container is initially hidden (ng-show="reportCard.user"),
+    // Since its div container is initially hidden (ng-show="prospatheia.user"),
     // the svg is sized very small. When the container is hidden, the svg doesn't
     // get resized automatically, so we trigger a window event on the next loop
-    reportCard.resize = function() {
+    prospatheia.resize = function() {
       setTimeout(function() {
         window.dispatchEvent(new Event('resize'));
       }, 0);
     };
 
     $rootScope.$on('userChanged', function(event) {
-      reportCard.user = UserModelService.getUserName();
-      reportCard.groups = EffortGroupService.groupNamesForUser(reportCard.user);
-      reportCard.loadCSVHeaders();
-      reportCard.loadData();
-      reportCard.resize();
+      prospatheia.user = UserModelService.getUserName();
+      prospatheia.groups = EffortGroupService.groupNamesForUser(prospatheia.user);
+      prospatheia.loadCSVHeaders();
+      prospatheia.loadData();
+      prospatheia.resize();
     });
 
     // CSV data to<->from GitHub
-    reportCard.loadData = function(successMessage) {
+    prospatheia.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
         if(err) {
           // GitHub will return 404 error for either Not Found or
@@ -307,91 +307,91 @@ var app = angular.module('reportcard', [ 'nvd3ChartDirectives','ui.bootstrap', '
           // Optimistically we'll assume new user and if user
           // does not have access to the repo, saving will fail later
           if(err.status == 404) {
-            reportCard.status = 'No effort reported';
-            reportCard.statusClass = 'alert-info';
-            reportCard.efforts = [];
-            reportCard.dirty = false;
-            reportCard.csvFileExists = false;
-            reportCard.resetEffort();
+            prospatheia.status = 'No effort reported';
+            prospatheia.statusClass = 'alert-info';
+            prospatheia.efforts = [];
+            prospatheia.dirty = false;
+            prospatheia.csvFileExists = false;
+            prospatheia.resetEffort();
           } else {
-            reportCard.status = err.data.message;
-            reportCard.statusClass = 'alert-danger';
+            prospatheia.status = err.data.message;
+            prospatheia.statusClass = 'alert-danger';
           }
         } else {
-          reportCard.status = successMessage || 'Loaded data successfully';
-          reportCard.statusClass = 'alert-success';
-          reportCard.efforts = rows;
-          reportCard.dirty = false;
-          reportCard.csvFileExists = true;
-          reportCard.resetEffort();
-          reportCard.defaultToLastEffort();
-          reportCard.defaultToNextPeriod();
+          prospatheia.status = successMessage || 'Loaded data successfully';
+          prospatheia.statusClass = 'alert-success';
+          prospatheia.efforts = rows;
+          prospatheia.dirty = false;
+          prospatheia.csvFileExists = true;
+          prospatheia.resetEffort();
+          prospatheia.defaultToLastEffort();
+          prospatheia.defaultToNextPeriod();
         }
       });
     };
 
-    reportCard.commitData = function() {
-      if(!reportCard.dirty) {
+    prospatheia.commitData = function() {
+      if(!prospatheia.dirty) {
         // No changes
-        reportCard.status = 'No changes';
-        reportCard.statusClass = 'alert-info';
+        prospatheia.status = 'No changes';
+        prospatheia.statusClass = 'alert-info';
         return;
       }
-      CSVDataService.writeCSV(reportCard.efforts, reportCard.csvFileExists, function(err) {
+      CSVDataService.writeCSV(prospatheia.efforts, prospatheia.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
-        reportCard.dirty = false;
+        prospatheia.dirty = false;
         if(err) {
-          reportCard.status = err;
-          reportCard.statusClass = 'alert-danger';
+          prospatheia.status = err;
+          prospatheia.statusClass = 'alert-danger';
         } else {
           var dateString = new Date().toString();
-          reportCard.status = 'Saved for ' + UserModelService.getUserName() + ' on ' + dateString;
+          prospatheia.status = 'Saved for ' + UserModelService.getUserName() + ' on ' + dateString;
           // Previously was calling loadData here to update the SHA, but the API doesn't
           // return the new SHA fast enough
-          reportCard.statusClass = 'alert-success';
-          reportCard.csvFileExists = true;
-          reportCard.defaultToLastEffort();
-          reportCard.defaultToNextPeriod();
+          prospatheia.statusClass = 'alert-success';
+          prospatheia.csvFileExists = true;
+          prospatheia.defaultToLastEffort();
+          prospatheia.defaultToNextPeriod();
         }
       });
     };
 
-    reportCard.getStatusClass = function() {
-      if(reportCard.dirty) {
+    prospatheia.getStatusClass = function() {
+      if(prospatheia.dirty) {
         return 'alert-warning';
        } else {
-        return reportCard.statusClass;
+        return prospatheia.statusClass;
        }
     };
 
-    reportCard.getStatusText = function() {
-      if(reportCard.dirty) {
+    prospatheia.getStatusText = function() {
+      if(prospatheia.dirty) {
         return 'Unsaved changes';
        } else {
-        return reportCard.status;
+        return prospatheia.status;
        }
     };
 
     // Initialization
-    reportCard.title = 'GCB Effort Reporting';
-    reportCard.status = '';
-    reportCard.statusClass = ''
-    reportCard.dirty = false;
+    prospatheia.title = 'GCB Effort Reporting';
+    prospatheia.status = '';
+    prospatheia.statusClass = ''
+    prospatheia.dirty = false;
     // Assume the file exists until we know it doesn't.
     // This way, we can't accidentally clobber an existing file by not loading the previous
     // version's SHA
-    reportCard.csvFileExists = false;
-    reportCard.csvHeaders = [];
-    reportCard.efforts = [];
+    prospatheia.csvFileExists = false;
+    prospatheia.csvHeaders = [];
+    prospatheia.efforts = [];
 });
 
 // Actually depends on d3
-var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHubAPIModule','ReportCardUserModule']).service('CSVDataService', function(ReportCardGitHubAPIService, UserModelService) {
+var csvDataService = angular.module('ProspatheiaCSVDataModule', ['ProspatheiaGitHubAPIModule','ProspatheiaUserModule']).service('CSVDataService', function(ProspatheiaGitHubAPIService, UserModelService) {
   var localThis = this;
   this.sha = ''; // SHA of the last-read file, initialized to empty string
   this.readCSV = function(callback) { // callback args are (err, rows)
-    ReportCardGitHubAPIService.loadFile(function(err, data) {
+    ProspatheiaGitHubAPIService.loadFile(function(err, data) {
       if(err) {
         callback(err);
       } else {
@@ -419,7 +419,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
     // Construct a commit message
     var message = 'Updates by ' + UserModelService.getUserName();
     // Commit
-    ReportCardGitHubAPIService.commitFile(encodedContent, message, sha, function(err, data) {
+    ProspatheiaGitHubAPIService.commitFile(encodedContent, message, sha, function(err, data) {
       // Have to read the commit SHA out of data, since an immediate API call won't update
       if(err) {
         var message = err.data.message;
@@ -437,7 +437,7 @@ var csvDataService = angular.module('ReportCardCSVDataModule', ['ReportCardGitHu
   };
 });
 
-var userModelService = angular.module('ReportCardUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
+var userModelService = angular.module('ProspatheiaUserModule', ['ngCookies']).service('UserModelService', function($http, $rootScope, $cookies) {
   // Singleton data model object - stores user and token
   var localThis = this;
   localThis.userModel = {user: null, accessToken: null};
@@ -523,14 +523,14 @@ app.config(['OAuthProvider', function (OAuthProvider) {
   });
 }]);
 
-var gitHubAPIService = angular.module('ReportCardGitHubAPIModule', ['ReportCardUserModule']).service('ReportCardGitHubAPIService', function($http, $rootScope, $cookies, UserModelService) {
+var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['ProspatheiaUserModule']).service('ProspatheiaGitHubAPIService', function($http, $rootScope, $cookies, UserModelService) {
   // exposes functions loadFile and commitFile
   // https://developer.github.com/v3/repos/contents/#get-contents
   // https://developer.github.com/v3/repos/contents/#update-a-file
 
   var localThis = this;
   this.owner = 'Duke-GCB';
-  this.repo = 'reportcard-data';
+  this.repo = 'prospatheia-data';
   this.buildURL = function() {
     return gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + UserModelService.getUserName() + '.csv';
   };

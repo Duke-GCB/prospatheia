@@ -1,13 +1,13 @@
-.report-card-tooltip {
+.prospatheia-tooltip {
   width: 200px;
 }
 
-.report-card-tooltip .title {
+.prospatheia-tooltip .title {
   font-weight: bold;
   background-color: #eee;
 }
 
-.report-card-tooltip .summary {
+.prospatheia-tooltip .summary {
   white-space: normal;
   text-align: left;
 }
