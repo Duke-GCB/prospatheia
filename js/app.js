@@ -530,7 +530,7 @@ var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['Prospathei
 
   var localThis = this;
   this.owner = 'Duke-GCB';
-  this.repo = 'prospatheia-data';
+  this.repo = 'reportcard-data';
   this.buildURL = function() {
     return gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + UserModelService.getUserName() + '.csv';
   };
