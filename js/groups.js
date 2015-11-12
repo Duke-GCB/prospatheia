@@ -53,7 +53,7 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
         categories : informaticsCategories },
       { name : 'proteomics',
-        members: [],
+        members: ['trackmytime','Will-Thompson','mamoseley','mwfoster','Mabbett','gmw12','es3064','Stirman02'],
         categories : proteomicsCategories },
     ];
 
