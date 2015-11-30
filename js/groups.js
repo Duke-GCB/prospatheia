@@ -22,10 +22,39 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         summary: "Work responding to requests or reports sent to IT, in contrast to initiated in IT; includes such work even if not recorded in a ticket; should not include collaborative or infrastructure projects (which sometimes start as a ticket)" },
       ];
 
+  var proteomicsCategories = [
+      { csvHeader: "pctAdmin",
+        shortLabel: "Admin",
+        longLabel: "Administrative",
+        summary: "" },
+      { csvHeader: "pctBillable",
+        shortLabel: "Billable",
+        longLabel: "Billable",
+        summary: "" },
+      { csvHeader: "pctEducation",
+        shortLabel: "Education",
+        longLabel: "Education",
+        summary: "" },
+      { csvHeader: "pctLabMaintenance",
+        shortLabel: "Lab Maint.",
+        longLabel: "Lab Maintenance",
+        summary: "" },
+      { csvHeader: "pctProjectDev",
+        shortLabel: "Project Dev",
+        longLabel: "Project Development",
+        summary: "" },
+      { csvHeader: "pctServiceDev",
+        shortLabel: "Service Dev",
+        longLabel: "Service Development",
+        summary: "" },
+      ];
   this.groups = [
       { name : 'informatics',
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
-        categories : informaticsCategories }
+        categories : informaticsCategories },
+      { name : 'proteomics',
+        members: ['trackmytime','Will-Thompson','mamoseley','mwfoster','Mabbett','gmw12','es3064','Stirman02'],
+        categories : proteomicsCategories },
     ];
 
   // Adapted from http://stackoverflow.com/a/1961068 by adding key
