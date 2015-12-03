@@ -1,5 +1,6 @@
 .prospatheia-tooltip {
-  width: 200px;
+  white-space: normal;
+  width: 280px;
 }
 
 .prospatheia-tooltip .title {
@@ -8,7 +9,6 @@
 }
 
 .prospatheia-tooltip .summary {
-  white-space: normal;
   text-align: left;
 }
 
