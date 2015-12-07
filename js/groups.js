@@ -48,6 +48,34 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         longLabel: "Service Development",
         summary: "<ul><li>Non-funded research</li><li>Development of new services</li><li>General protocol testing and optimization</li></ul>" },
       ];
+
+  var microarrayCategories = [
+      { csvHeader: "pctMaint",
+        shortLabel: "Maintenance",
+        longLabel: "Laboratory and computer maintenance",
+        summary: "&nbsp;" },
+      { csvHeader: "pctOps",
+        shortLabel: "Operations",
+        longLabel: "Laboratory and computer operations",
+        summary: "&nbsp;" },
+      { csvHeader: "pctGrants",
+        shortLabel: "Grants",
+        longLabel: "Effort on grants",
+        summary: "&nbsp;" },
+      { csvHeader: "pctEducation",
+        shortLabel: "Education",
+        longLabel: "Education, training, and outreach",
+        summary: "&nbsp;" },
+      { csvHeader: "pctConsultation",
+        shortLabel: "Consultation",
+        longLabel: "Consultation",
+        summary: "&nbsp;" },
+      { csvHeader: "pctProfServ",
+        shortLabel: "Prof. services",
+        longLabel: "Professional services",
+        summary: "&nbsp;" },
+      ];
+
   this.groups = [
       { name : 'informatics',
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
@@ -55,6 +83,9 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
       { name : 'proteomics',
         members: ['trackmytime','Will-Thompson','mamoseley','mwfoster','Mabbett','gmw12','es3064','Stirman02'],
         categories : proteomicsCategories },
+      { name : 'microarray',
+        members: ['hhemric','novemberboys','rowle001','zzzwei'],
+        categories : microarrayCategories },
     ];
 
   // Adapted from http://stackoverflow.com/a/1961068 by adding key
