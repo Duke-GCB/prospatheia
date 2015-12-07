@@ -118,7 +118,7 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         members: ['hhemric','novemberboys','rowle001','zzzwei'],
         categories : microarrayCategories },
       { name : 'sequencing',
-        members: [],
+        members: [ 'gca2', 'nicholashoang', 'nicolasdevos1478', 'ofedrigo', 'wendyparris' ],
         categories : sequencingCategories },
     ];
 
