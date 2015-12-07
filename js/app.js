@@ -40,24 +40,42 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
     prospatheia.pageSize = 10;
     prospatheia.currentPage = 0;
     prospatheia.numberOfPages=function() {
-      return Math.ceil(prospatheia.effort.length/prospatheia.pageSize);
+      return Math.ceil(prospatheia.efforts.length/prospatheia.pageSize);
     }
 
     prospatheia.nextPage = function() {
+      if(prospatheia.disableNext()) { return; }
       prospatheia.currentPage = prospatheia.currentPage + 1;
     };
 
     prospatheia.previousPage = function() {
+      if(prospatheia.disablePrevious()) { return; }
       prospatheia.currentPage = prospatheia.currentPage - 1;
     };
 
-    prospatheia.disableNextPage = function() {
-      return prospatheia.currentPage >= prospatheia.effort.length/prospatheia.pageSize - 1;
+    prospatheia.disablePrevious = function() {
+      return prospatheia.currentPage == 0
     };
 
-    prospatheia.disablePreviousPage = function() {
-      return prospatheia.currentPage == 0;
+    prospatheia.disableNext = function() {
+       return prospatheia.currentPage >= prospatheia.efforts.length/prospatheia.pageSize - 1;
     };
+
+    prospatheia.nextClass = function() {
+      if(prospatheia.disableNext()) {
+        return "next disabled";
+      } else {
+        return "next";
+      }
+    }
+
+    prospatheia.previousClass = function () {
+      if(prospatheia.disablePrevious()) {
+        return "previous disabled";
+      } else {
+        return "previous";
+      }
+    }
 
 
     // Date handling

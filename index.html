@@ -103,8 +103,8 @@
           </table>
           <nav>
             <ul class="pager">
-              <li class="previous"><a ng-click="prospatheia.previousPage()" ng-disabled="prospatheia.disablePreviousPage()"><span aria-hidden="true">&larr;</span> Newer</a></li>
-              <li class="next"><a ng-click="prospatheia.nextPage()" ng-disabled="prospatheia.disableNextPage()">Older <span aria-hidden="true">&rarr;</span></a></li>
+              <li ng-class="prospatheia.previousClass()"><a ng-click="prospatheia.previousPage()"><span aria-hidden="true">&larr;</span> Newer</a></li>
+              <li ng-class="prospatheia.nextClass()"><a ng-click="prospatheia.nextPage()">Older <span aria-hidden="true">&rarr;</span></a></li>
             </ul>
           </nav>
         </div>
