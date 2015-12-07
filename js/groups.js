@@ -76,6 +76,8 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         summary: "&nbsp;" },
       ];
 
+  var sequencingCategories = angular.copy(microarrayCategories);
+
   this.groups = [
       { name : 'informatics',
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
@@ -86,6 +88,9 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
       { name : 'microarray',
         members: ['hhemric','novemberboys','rowle001','zzzwei'],
         categories : microarrayCategories },
+      { name : 'sequencing',
+        members: [],
+        categories : sequencingCategories },
     ];
 
   // Adapted from http://stackoverflow.com/a/1961068 by adding key
