@@ -76,6 +76,37 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         summary: "&nbsp;" },
       ];
 
+  var sequencingCategories = [
+      { csvHeader: "pctLabAdmin",
+        shortLabel: "Lab Admin",
+        longLabel: "Lab maintenance & administration",
+        summary: "<ul><li>Administration (ordering,sales rep etc.); </li><li>Lab maintenance (inventory, SOP, safety, washes etc…); </li><li>Computer maintenance.</li></ul>" },
+      { csvHeader: "pctStaffAdmin",
+        shortLabel: "Staff Admin",
+        longLabel: "Staff administration",
+        summary: "<ul><li>Administration (reporting, time tracking etc…); </li><li>Staff Management; </li><li>Staff meeting (lab meeting, center meeting etc…).</li></ul>" },
+      { csvHeader: "pctProjects",
+        shortLabel: "Projects",
+        longLabel: "Projects",
+        summary: "<ul><li>Lab efforts associated with projects (sample handling, QC, lib preps, sequencing, data distribution etc..). </li><li>Project troubleshooting; </li><li>Client communication during a project; </li><li>Primary and secondary bioinformatics analyses associated to a project; </li><li>Programming efforts devoted to a project.</li></ul>" },
+      { csvHeader: "pctEducation",
+        shortLabel: "Education",
+        longLabel: "Education & Outreach",
+        summary: "<ul><li>Outreach (performing presentations, going to vendor show etc…); </li><li>Education (offering lectures, workshops, 1:1 training, facility tours, etc. </li><li>Receiving training and professional development; </li><li>Going to conferences; </li><li>Continuing education (reading literature, watching webcasts, etc…).</li></ul>" },
+      { csvHeader: "pctConsultation",
+        shortLabel: "Consultation",
+        longLabel: "Consultation",
+        summary: "<ul><li>Meeting/corresponding with clients before starting a project; </li><li>Preaward support.</li></ul>" },
+      { csvHeader: "pctResDev",
+        shortLabel: "Development",
+        longLabel: "Development, Research, and Services",
+        summary: "<ul><li>Product development (Protocol testing, optimization, and customization); </li><li>Non-funded research; </li><li>Services (proposal and manuscript review not associated with clients, society participation, committees etc…).</li></ul>" },
+      { csvHeader: "pctGrants",
+        shortLabel: "Grants",
+        longLabel: "Effort on grants",
+        summary: "<ul><li>Efforts devoted to a funded project with salary support.</li></ul>" },
+      ];
+
   this.groups = [
       { name : 'informatics',
         members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
@@ -86,6 +117,9 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
       { name : 'microarray',
         members: ['hhemric','novemberboys','rowle001','zzzwei'],
         categories : microarrayCategories },
+      { name : 'sequencing',
+        members: [],
+        categories : sequencingCategories },
     ];
 
   // Adapted from http://stackoverflow.com/a/1961068 by adding key
