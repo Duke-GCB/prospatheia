@@ -35,6 +35,30 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       prospatheia.normalizeEffort();
     };
 
+    // Pagination
+
+    prospatheia.pageSize = 10;
+    prospatheia.currentPage = 0;
+    prospatheia.numberOfPages=function() {
+      return Math.ceil(prospatheia.effort.length/prospatheia.pageSize);
+    }
+
+    prospatheia.nextPage = function() {
+      prospatheia.currentPage = prospatheia.currentPage + 1;
+    };
+
+    prospatheia.previousPage = function() {
+      prospatheia.currentPage = prospatheia.currentPage - 1;
+    };
+
+    prospatheia.disableNextPage = function() {
+      return prospatheia.currentPage >= prospatheia.effort.length/prospatheia.pageSize - 1;
+    };
+
+    prospatheia.disablePreviousPage = function() {
+      return prospatheia.currentPage == 0;
+    };
+
 
     // Date handling
     // Date is stored internally as Date. We convert to 'YYYY-MM-DD' when saving to CSV
@@ -564,4 +588,12 @@ var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['Prospathei
         callback({'data': data, 'status': status});
       });
   };
+});
+
+// For pagination
+app.filter('startFrom', function() {
+    return function(input, start) {
+        start = +start; //parse to int
+        return input.slice(start);
+    }
 });
