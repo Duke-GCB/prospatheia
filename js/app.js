@@ -597,3 +597,9 @@ app.filter('startFrom', function() {
         return input.slice(start);
     }
 });
+
+app.filter('reverse', function() {
+  return function(items) {
+    return items.slice().reverse();
+  };
+});

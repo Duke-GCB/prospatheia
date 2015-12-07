@@ -96,15 +96,15 @@
             <tr><th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th></tr>
           </thead>
           <tbody>
-            <tr ng-repeat="effort in prospatheia.efforts | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize">
+            <tr ng-repeat="effort in prospatheia.efforts | reverse | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize">
               <td ng-repeat="field in prospatheia.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
           </table>
           <nav>
             <ul class="pager">
-              <li class="previous"><a href="#" ng-click="prospatheia.previousPage()" ng-disabled="prospatheia.disablePreviousPage()"><span aria-hidden="true">&larr;</span> Older</a></li>
-              <li class="next"><a href="#" ng-click="prospatheia.nextPage()" ng-disabled="prospatheia.disableNextPage()">Newer <span aria-hidden="true">&rarr;</span></a></li>
+              <li class="previous"><a ng-click="prospatheia.previousPage()" ng-disabled="prospatheia.disablePreviousPage()"><span aria-hidden="true">&larr;</span> Newer</a></li>
+              <li class="next"><a ng-click="prospatheia.nextPage()" ng-disabled="prospatheia.disableNextPage()">Older <span aria-hidden="true">&rarr;</span></a></li>
             </ul>
           </nav>
         </div>
