@@ -109,7 +109,7 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
 
   this.groups = [
       { name : 'informatics',
-        members : ['dansomers','dleehr','hlapp','netscruff','rosedaniels'],
+        members : ['dansomers','dleehr','hlapp','johnbradley','netscruff','rosedaniels'],
         categories : informaticsCategories },
       { name : 'proteomics',
         members: ['trackmytime','Will-Thompson','mamoseley','mwfoster','mabbett','gmw12','es3064','Stirman02'],
