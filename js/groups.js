@@ -74,6 +74,10 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
         shortLabel: "Prof. services",
         longLabel: "Professional services",
         summary: "<ul><li>Present class lectures</li><li>Grant and paper reviewer</li><li>Committee service</li></ul>" },
+      { csvHeader: "pctSequencing",
+        shortLabel: "Sequencing",
+        longLabel: "Sequencing",
+        summary: "<ul><li>Processing samples in the sequencing lab</li></ul>" },
       ];
 
   var sequencingCategories = [
