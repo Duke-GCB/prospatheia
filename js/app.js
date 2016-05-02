@@ -199,7 +199,6 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       row.groups = groups;
       row.startDate = startDate;
       row.endDate = endDate;
-      row.saved = false;
       // since effortArray is an array, we'll index it
       var keys = prospatheia.csvHeaders.map(function(header) { return header.key; });
       // The keys array will be larger than the efforts array, since it includes
@@ -208,6 +207,10 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       for(var keyIndex=offset;keyIndex < keys.length;keyIndex++) {
         row[keys[keyIndex]] = effortArray[keyIndex - offset].y;
       }
+      // Apply saved state after setting effort values. 'saved' is not in csvHeaders
+      // since it should not be stored in the CSV file. If we set it earlier, the count
+      // of keys that aren't effort percents will be wrong 
+      row.saved = false;
       return row;
     };
 
