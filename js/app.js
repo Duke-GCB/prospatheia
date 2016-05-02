@@ -199,6 +199,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       row.groups = groups;
       row.startDate = startDate;
       row.endDate = endDate;
+      row.saved = false;
       // since effortArray is an array, we'll index it
       var keys = prospatheia.csvHeaders.map(function(header) { return header.key; });
       // The keys array will be larger than the efforts array, since it includes
@@ -225,6 +226,18 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
         }
       });
       return extracted;
+    }
+
+    prospatheia.setSavedEfforts = function(efforts) {
+      prospatheia.efforts = efforts.map(function(effort) { effort.saved = true; return effort});
+    };
+
+    prospatheia.getEffortsToSave = function() {
+      var efforts = angular.copy(prospatheia.efforts);
+      efforts.forEach(function(effort, index) {
+        delete effort.saved;
+      });
+      return efforts;
     }
 
     // Add this effort to the list
@@ -351,7 +364,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
           if(err.status == 404) {
             prospatheia.status = 'No effort reported';
             prospatheia.statusClass = 'alert-info';
-            prospatheia.efforts = [];
+            prospatheia.setSavedEfforts([]);
             prospatheia.dirty = false;
             prospatheia.csvFileExists = false;
             prospatheia.resetEffort();
@@ -362,7 +375,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
         } else {
           prospatheia.status = successMessage || 'Loaded data successfully';
           prospatheia.statusClass = 'alert-success';
-          prospatheia.efforts = rows;
+          prospatheia.setSavedEfforts(rows);
           prospatheia.dirty = false;
           prospatheia.csvFileExists = true;
           prospatheia.resetEffort();
@@ -379,7 +392,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
         prospatheia.statusClass = 'alert-info';
         return;
       }
-      CSVDataService.writeCSV(prospatheia.efforts, prospatheia.csvFileExists, function(err) {
+      CSVDataService.writeCSV(prospatheia.getEffortsToSave(), prospatheia.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
         prospatheia.dirty = false;
@@ -415,6 +428,14 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
        }
     };
 
+    prospatheia.getEffortClass = function(effort) {
+      if(effort.saved) {
+        return 'saved';
+      } else {
+        return 'unsaved';
+      }
+    };
+
     // Initialization
     prospatheia.title = 'GCB Effort Reporting';
     prospatheia.status = '';
@@ -425,7 +446,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
     // version's SHA
     prospatheia.csvFileExists = false;
     prospatheia.csvHeaders = [];
-    prospatheia.efforts = [];
+    prospatheia.setSavedEfforts([]);
 });
 
 // Actually depends on d3

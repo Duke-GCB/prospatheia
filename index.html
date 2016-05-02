@@ -96,7 +96,7 @@
             <tr><th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th></tr>
           </thead>
           <tbody>
-            <tr ng-repeat="effort in prospatheia.efforts | reverse | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize">
+            <tr ng-repeat="effort in prospatheia.efforts | reverse | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize" ng-class="prospatheia.getEffortClass(effort)">
               <td ng-repeat="field in prospatheia.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
