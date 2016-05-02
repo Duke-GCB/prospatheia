@@ -231,10 +231,19 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       return extracted;
     }
 
+    // Setter function for loading saved efforts. Annotates incoming efforts as saved
     prospatheia.setSavedEfforts = function(efforts) {
       prospatheia.efforts = efforts.map(function(effort) { effort.saved = true; return effort});
     };
 
+    // Function to mark all efforts as saved
+    prospatheia.markAllEffortsSaved = function() {
+      prospatheia.efforts.forEach(function(effort, index) {
+        effort.saved = true;
+      });
+    }
+
+    // Getter function to get a copy of the efforts array without the .saved property
     prospatheia.getEffortsToSave = function() {
       var efforts = angular.copy(prospatheia.efforts);
       efforts.forEach(function(effort, index) {
@@ -408,6 +417,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
           // Previously was calling loadData here to update the SHA, but the API doesn't
           // return the new SHA fast enough
           prospatheia.statusClass = 'alert-success';
+          prospatheia.markAllEffortsSaved();
           prospatheia.csvFileExists = true;
           prospatheia.defaultToLastEffort();
           prospatheia.defaultToNextPeriod();
