@@ -265,6 +265,13 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       prospatheia.dirty = true;
     }
 
+    prospatheia.removeUnsavedEffort = function(effort) {
+      var index = prospatheia.efforts.indexOf(effort);
+      if(index > -1) {
+        prospatheia.efforts.splice(index, 1);
+      }
+    };
+
     // Sets effort in pie chart to the last effort
     prospatheia.defaultToLastEffort = function() {
       if(prospatheia.efforts.length > 0) {
