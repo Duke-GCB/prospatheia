@@ -272,6 +272,22 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       }
     };
 
+    prospatheia.checkForDuplicateDates = function() {
+      // Extract the start/end dates into a single string
+      var datePairs = prospatheia.efforts.map(function(effort) { return effort.startDate + ':' + effort.endDate; } );
+      // sort them
+      datePairs.sort();
+      // check duplicates
+      var foundDuplicate = false;
+      for (var i=0;i<datePairs.length - 1; i++) {
+        if(datePairs[i + 1] == datePairs[i]) {
+          foundDuplicate = true;
+          break;
+        }
+      }
+      return foundDuplicate;
+    }
+
     // Sets effort in pie chart to the last effort
     prospatheia.defaultToLastEffort = function() {
       if(prospatheia.efforts.length > 0) {
