@@ -93,10 +93,16 @@
           <table class="table table-striped col-md-12" id="effortTable">
           <thead>
             <caption>Reported Effort for {{ prospatheia.user }}</caption>
-            <tr><th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th></tr>
+            <tr>
+              <th></th>
+              <th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="effort in prospatheia.efforts | reverse | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize" ng-class="prospatheia.getEffortClass(effort)">
+              <td class="remove">
+              <button class="btn btn-link btn-xs" href="#" ng-hide="effort.saved"><i class="glyphicon glyphicon-remove"></i></button>
+              </td>
               <td ng-repeat="field in prospatheia.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
