@@ -15,3 +15,7 @@
 a[ng-click]{
     cursor: pointer;
 }
+
+.table-striped > tbody > tr.unsaved {
+  background-color: #fcf8e3;
+}
