@@ -249,6 +249,10 @@ var app = angular.module('prospatheia',
       });
     }
 
+    prospatheia.dirty = function() {
+      return prospatheia.efforts.some(function(effort) { return effort.saved == false; });
+    };
+
     // Getter function to get a copy of the efforts array without the .saved property
     prospatheia.getEffortsToSave = function() {
       var efforts = angular.copy(prospatheia.efforts);
@@ -268,7 +272,6 @@ var app = angular.module('prospatheia',
       var effort = prospatheia.effort;
       var row = makeRow(user, groups, startDate, endDate, effort);
       prospatheia.efforts.push(row);
-      prospatheia.dirty = true;
     }
 
     prospatheia.removeUnsavedEffort = function(effort) {
@@ -432,7 +435,6 @@ var app = angular.module('prospatheia',
             prospatheia.status = 'No effort reported';
             prospatheia.statusClass = 'alert-info';
             prospatheia.setSavedEfforts([]);
-            prospatheia.dirty = false;
             prospatheia.csvFileExists = false;
             prospatheia.resetEffort();
           } else {
@@ -443,7 +445,6 @@ var app = angular.module('prospatheia',
           prospatheia.status = successMessage || 'Loaded data successfully';
           prospatheia.statusClass = 'alert-success';
           prospatheia.setSavedEfforts(rows);
-          prospatheia.dirty = false;
           prospatheia.csvFileExists = true;
           prospatheia.resetEffort();
           prospatheia.defaultToLastEffort();
@@ -453,7 +454,7 @@ var app = angular.module('prospatheia',
     };
 
     prospatheia.saveData = function(ignoreDuplicates) {
-      if(!prospatheia.dirty) {
+      if(!prospatheia.dirty()) {
         // No changes
         prospatheia.status = 'No changes';
         prospatheia.statusClass = 'alert-info';
@@ -469,7 +470,6 @@ var app = angular.module('prospatheia',
       CSVDataService.writeCSV(prospatheia.getEffortsToSave(), prospatheia.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
-        prospatheia.dirty = false;
         if(err) {
           prospatheia.status = err;
           prospatheia.statusClass = 'alert-danger';
@@ -488,7 +488,7 @@ var app = angular.module('prospatheia',
     };
 
     prospatheia.getStatusClass = function() {
-      if(prospatheia.dirty) {
+      if(prospatheia.dirty()) {
         return 'alert-warning';
        } else {
         return prospatheia.statusClass;
@@ -496,7 +496,7 @@ var app = angular.module('prospatheia',
     };
 
     prospatheia.getStatusText = function() {
-      if(prospatheia.dirty) {
+      if(prospatheia.dirty()) {
         return 'Unsaved changes';
        } else {
         return prospatheia.status;
@@ -515,7 +515,6 @@ var app = angular.module('prospatheia',
     prospatheia.title = 'GCB Effort Reporting';
     prospatheia.status = '';
     prospatheia.statusClass = ''
-    prospatheia.dirty = false;
     // Assume the file exists until we know it doesn't.
     // This way, we can't accidentally clobber an existing file by not loading the previous
     // version's SHA
