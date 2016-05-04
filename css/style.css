@@ -19,3 +19,6 @@ a[ng-click]{
 .table-striped > tbody > tr.unsaved {
   background-color: #fcf8e3;
 }
+
+table.table.table-striped tr > td:first-child {width:3em;}
+td.remove > button.btn-link { color: black;}

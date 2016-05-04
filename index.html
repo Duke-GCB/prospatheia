@@ -93,10 +93,16 @@
           <table class="table table-striped col-md-12" id="effortTable">
           <thead>
             <caption>Reported Effort for {{ prospatheia.user }}</caption>
-            <tr><th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th></tr>
+            <tr>
+              <th></th>
+              <th ng-repeat="field in prospatheia.displayHeaders">{{field.value}}</th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="effort in prospatheia.efforts | reverse | startFrom: prospatheia.currentPage * prospatheia.pageSize | limitTo: prospatheia.pageSize" ng-class="prospatheia.getEffortClass(effort)">
+              <td class="remove">
+              <button class="btn btn-link btn-xs" href="#" ng-hide="effort.saved" ng-click="prospatheia.removeUnsavedEffort(effort)"><i class="glyphicon glyphicon-remove"></i></button>
+              </td>
               <td ng-repeat="field in prospatheia.displayHeaders">{{effort[field.key]}}</td>
             </tr>
           </tbody>
@@ -116,7 +122,7 @@
             <button class="form-control btn btn-default btn-warning " ng-click="prospatheia.loadData()">Reset</button>
           </span>
           <span class="col-xs-12 col-md-2">
-            <button class="form-control btn btn-default btn-success" ng-click="prospatheia.commitData()">Save</button>
+            <button class="form-control btn btn-default btn-success" ng-click="prospatheia.saveData()">Save</button>
           </span>
         </div>
       </div>
@@ -127,5 +133,22 @@
         </div>
       </div>
     </div>
+    <!-- Inline template for modal that warns about duplicate dates !-->
+    <script type="text/ng-template" id="warnDuplicates.html">
+      <div class="modal-header">
+        <h3 class="modal-title">Warning: Duplicate data</h3>
+      </div>
+      <div class="modal-body">
+        <p>Your report includes duplicate records for the following date ranges:</p>
+        <ul>
+          <li ng-repeat="dateRange in duplicateDateRanges">{{ dateRange }}</li>
+        </ul>
+        <p>Are you sure you want to save this data?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" ng-click="saveDuplicates()">Save Duplicates</button>
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+    </script>
   </body>
 </html>

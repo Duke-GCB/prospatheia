@@ -1,7 +1,13 @@
 var gitHubRoot = 'https://api.github.com';
 
-var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 'oauth.io', 'ProspatheiaUserModule','ProspatheiaCSVDataModule','ProspatheiaEffortGroupModule'])
-  .controller('ProspatheiaCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService) {
+var app = angular.module('prospatheia',
+  [ 'nvd3ChartDirectives',
+    'ui.bootstrap',
+    'oauth.io',
+    'ProspatheiaUserModule',
+    'ProspatheiaCSVDataModule',
+    'ProspatheiaEffortGroupModule'])
+  .controller('ProspatheiaCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService, $modal) {
     var prospatheia = this;
 
     // Headers, with display names
@@ -209,7 +215,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       }
       // Apply saved state after setting effort values. 'saved' is not in csvHeaders
       // since it should not be stored in the CSV file. If we set it earlier, the count
-      // of keys that aren't effort percents will be wrong 
+      // of keys that aren't effort percents will be wrong
       row.saved = false;
       return row;
     };
@@ -243,6 +249,10 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       });
     }
 
+    prospatheia.dirty = function() {
+      return prospatheia.efforts.some(function(effort) { return effort.saved == false; });
+    };
+
     // Getter function to get a copy of the efforts array without the .saved property
     prospatheia.getEffortsToSave = function() {
       var efforts = angular.copy(prospatheia.efforts);
@@ -262,7 +272,31 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       var effort = prospatheia.effort;
       var row = makeRow(user, groups, startDate, endDate, effort);
       prospatheia.efforts.push(row);
-      prospatheia.dirty = true;
+    }
+
+    prospatheia.removeUnsavedEffort = function(effort) {
+      var index = prospatheia.efforts.indexOf(effort);
+      if(index > -1) {
+        prospatheia.efforts.splice(index, 1);
+      }
+    };
+
+    prospatheia.duplicateDateRanges = function() {
+      // Extract the start/end dates into a single string
+      var datePairs = prospatheia.efforts.map(function(effort) { return effort.startDate + ' to ' + effort.endDate; } );
+      // sort them
+      datePairs.sort();
+      // check duplicates
+      var duplicateRanges = [];
+      for (var i=0;i<datePairs.length - 1; i++) {
+        if(datePairs[i + 1] == datePairs[i]) {
+          // Ensure duplicate ranges are unique
+          if(duplicateRanges.indexOf(datePairs[i]) == -1) {
+            duplicateRanges.push(datePairs[i]);
+          }
+        }
+      }
+      return duplicateRanges;
     }
 
     // Sets effort in pie chart to the last effort
@@ -365,6 +399,30 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       prospatheia.resize();
     });
 
+    // Shows modal warning for duplicate effort
+    prospatheia.warnDuplicates = function() {
+      var modalInstance = $modal.open({
+        animation: true,
+        templateUrl: 'warnDuplicates.html',
+        controller: 'WarnDuplicatesCtrl',
+        size: 'lg',
+        resolve: {
+          duplicateDateRanges: function() {
+            return prospatheia.duplicateDateRanges();
+          }
+        }
+      });
+
+      // Assign a promise to result. When the modal is 'closed', the promise is resolved
+      // When 'dismissed', the promise is rejected. We'll map "Save anyways"->close->resolve
+      // And "Cancel"->dismiss/reject
+      // function order to .then() is (resolved, rejected). We don't need to do anything
+      // on rejection, so we supply no function.
+      modalInstance.result.then(function() {
+        prospatheia.saveData(true); // Ignore Duplicates
+      });
+    };
+
     // CSV data to<->from GitHub
     prospatheia.loadData = function(successMessage) {
       CSVDataService.readCSV(function(err, rows) {
@@ -377,7 +435,6 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
             prospatheia.status = 'No effort reported';
             prospatheia.statusClass = 'alert-info';
             prospatheia.setSavedEfforts([]);
-            prospatheia.dirty = false;
             prospatheia.csvFileExists = false;
             prospatheia.resetEffort();
           } else {
@@ -388,7 +445,6 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
           prospatheia.status = successMessage || 'Loaded data successfully';
           prospatheia.statusClass = 'alert-success';
           prospatheia.setSavedEfforts(rows);
-          prospatheia.dirty = false;
           prospatheia.csvFileExists = true;
           prospatheia.resetEffort();
           prospatheia.defaultToLastEffort();
@@ -397,17 +453,23 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
       });
     };
 
-    prospatheia.commitData = function() {
-      if(!prospatheia.dirty) {
+    prospatheia.saveData = function(ignoreDuplicates) {
+      if(!prospatheia.dirty()) {
         // No changes
         prospatheia.status = 'No changes';
         prospatheia.statusClass = 'alert-info';
         return;
       }
+
+      if(!ignoreDuplicates && prospatheia.duplicateDateRanges().length > 0) {
+        // have duplicate ranges and not set to ignore
+        prospatheia.warnDuplicates();
+        return;
+      }
+
       CSVDataService.writeCSV(prospatheia.getEffortsToSave(), prospatheia.csvFileExists, function(err) {
         // Clear out dirty regardless of success or failure
         // Dirty controls the status box
-        prospatheia.dirty = false;
         if(err) {
           prospatheia.status = err;
           prospatheia.statusClass = 'alert-danger';
@@ -426,7 +488,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
     };
 
     prospatheia.getStatusClass = function() {
-      if(prospatheia.dirty) {
+      if(prospatheia.dirty()) {
         return 'alert-warning';
        } else {
         return prospatheia.statusClass;
@@ -434,7 +496,7 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
     };
 
     prospatheia.getStatusText = function() {
-      if(prospatheia.dirty) {
+      if(prospatheia.dirty()) {
         return 'Unsaved changes';
        } else {
         return prospatheia.status;
@@ -453,13 +515,22 @@ var app = angular.module('prospatheia', [ 'nvd3ChartDirectives','ui.bootstrap', 
     prospatheia.title = 'GCB Effort Reporting';
     prospatheia.status = '';
     prospatheia.statusClass = ''
-    prospatheia.dirty = false;
     // Assume the file exists until we know it doesn't.
     // This way, we can't accidentally clobber an existing file by not loading the previous
     // version's SHA
     prospatheia.csvFileExists = false;
     prospatheia.csvHeaders = [];
     prospatheia.setSavedEfforts([]);
+});
+
+var warnDuplicatesCtrl = angular.module('prospatheia').controller('WarnDuplicatesCtrl', function ($scope, $modalInstance, duplicateDateRanges) {
+  $scope.duplicateDateRanges = duplicateDateRanges;
+  $scope.cancel = function() {
+    $modalInstance.dismiss();
+  };
+  $scope.saveDuplicates = function() {
+    $modalInstance.close();
+  };
 });
 
 // Actually depends on d3
