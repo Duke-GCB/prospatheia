@@ -1,12 +1,12 @@
 from flask import Flask, flash, redirect, url_for, send_from_directory, make_response
 from flask_github import GitHub
 import sys
-import secrets
+import os
 
 app = Flask(__name__)
-app.config['GITHUB_CLIENT_ID'] = secrets.github_client_id
-app.config['GITHUB_CLIENT_SECRET'] = secrets.github_client_secret
-app.config['SECRET_KEY'] = secrets.secret_key
+app.config['GITHUB_CLIENT_ID'] = os.getenv('GITHUB_CLIENT_ID')
+app.config['GITHUB_CLIENT_SECRET'] = os.getenv('GITHUB_CLIENT_SECRET')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 github = GitHub(app)
 
