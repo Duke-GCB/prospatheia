@@ -32,7 +32,7 @@ def send_lib(path):
 
 @app.route('/login')
 def login():
-    return github.authorize()
+    return github.authorize(scope='repo')
 
 
 @app.route('/github-callback')
