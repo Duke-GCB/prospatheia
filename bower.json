@@ -19,8 +19,6 @@
     "angularjs-nvd3-directives": "~0.0.7",
     "angular-bootstrap": "~0.13.0",
     "bootstrap": "~3.3.4",
-    "angular-oauthio": "~0.0.2",
-    "oauth-js": "~0.4.3",
     "angular": "1.4.1",
     "angular-cookies": "~1.4.1"
   },
