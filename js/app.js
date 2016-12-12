@@ -3,11 +3,10 @@ var gitHubRoot = 'https://api.github.com';
 var app = angular.module('prospatheia',
   [ 'nvd3ChartDirectives',
     'ui.bootstrap',
-    'oauth.io',
     'ProspatheiaUserModule',
     'ProspatheiaCSVDataModule',
     'ProspatheiaEffortGroupModule'])
-  .controller('ProspatheiaCtrl', function(OAuth, UserModelService, CSVDataService, $rootScope, EffortGroupService, $modal) {
+  .controller('ProspatheiaCtrl', function(UserModelService, CSVDataService, $rootScope, EffortGroupService, $modal) {
     var prospatheia = this;
 
     // Headers, with display names
@@ -661,14 +660,6 @@ var userModelService = angular.module('ProspatheiaUserModule', ['ngCookies']).se
   // On startup, load cookies
   this.loadCookies();
 });
-
-app.config(['OAuthProvider', function (OAuthProvider) {
-  OAuthProvider.setPublicKey('_kdpfaZV5uH9ByiaekYxsbhdS4U');
-  OAuthProvider.setHandler('github', function (OAuthData, $http, UserModelService) {
-    // Received a token from GitHub, handle this
-    UserModelService.handleToken(OAuthData.result.access_token);
-  });
-}]);
 
 var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['ProspatheiaUserModule']).service('ProspatheiaGitHubAPIService', function($http, $rootScope, $cookies, UserModelService) {
   // exposes functions loadFile and commitFile
