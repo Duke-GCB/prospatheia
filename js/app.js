@@ -374,7 +374,7 @@ var app = angular.module('prospatheia',
     };
 
     prospatheia.login = function() {
-      OAuth.popup('github');
+      window.location = '/login';
     };
 
     prospatheia.logout = function() {

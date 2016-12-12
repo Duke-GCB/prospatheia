@@ -1,4 +1,4 @@
-from flask import Flask, flash, request, session, redirect, url_for
+from flask import Flask, flash, request, session, redirect, url_for, send_from_directory, make_response
 from flask_github import GitHub
 
 import secrets
@@ -10,9 +10,20 @@ app.config['SECRET_KEY'] = secrets.secret_key
 
 github = GitHub(app)
 
-@app.route('/index')
-def index():
-    return ''
+# static file routes
+
+@app.route('/')
+def root():
+  print 'root'
+  return send_from_directory('.','index.html')
+
+@app.route('/js/<path:path>')
+def send_js(path):
+  return send_from_directory('js', path)
+
+@app.route('/lib/<path:path>')
+def send_lib(path):
+  return send_from_directory('lib', path)
 
 @app.route('/login')
 def login():
@@ -24,14 +35,13 @@ def login():
 @app.route('/github-callback')
 @github.authorized_handler
 def authorized(oauth_token):
-    next_url = request.args.get('next') or url_for('index')
+    next_url = request.args.get('next') or url_for('root')
     if oauth_token is None:
         flash("Authorization failed.")
         return redirect(next_url)
-    # Pass the token to the user
-    print 'oauth token', oauth_token
-    # What should this return?
-    return oauth_token
+    resp = make_response(redirect(url_for('root')))
+    resp.set_cookie('rcghAccessToken', oauth_token)
+    return resp
 
 if __name__ == '__main__':
     app.run(debug=True)
