@@ -1,6 +1,6 @@
 from flask import Flask, flash, redirect, url_for, send_from_directory, make_response
 from flask_github import GitHub
-
+import sys
 import secrets
 
 app = Flask(__name__)
@@ -46,4 +46,4 @@ def authorized(oauth_token):
     return resp
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(port=int(sys.argv[1]), host='0.0.0.0')
