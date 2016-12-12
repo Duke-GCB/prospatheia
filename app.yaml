@@ -1,0 +1,7 @@
+entrypoint: python app.py $PORT
+env: flex
+runtime: python
+env_variables:
+  GITHUB_CLIENT_ID: ''
+  GITHUB_CLIENT_SECRET: ''
+  SECRET_KEY: ''
