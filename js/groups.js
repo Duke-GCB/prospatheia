@@ -53,7 +53,7 @@ var effortGroups = angular.module('ProspatheiaEffortGroupModule', []).service('E
       { csvHeader: "pctGrants",
         shortLabel: "Grants",
         longLabel: "Effort on grants",
-        summary: "<ul><li>DCI grant support</li><li>R24 grant support</li><li>AHA grant support</li><li>R25 grant support</li></ul>" },
+        summary: "<ul><li>R24 grant support</li><li>R25 grant support</li><li>BARDA grant support</li><li>AHA grant support</li></ul>" },
       { csvHeader: "pctEducation",
         shortLabel: "Education",
         longLabel: "Education, training, and outreach",
