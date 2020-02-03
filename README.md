@@ -16,7 +16,7 @@ Uses [AngularJS](https://angularjs.org), [nvd3](http://nvd3.org), and [GitHub](h
 2. Set the callback URL to something you can host locally (e.g. `http://localhost:8080/github-callback`)
 3. Create a new repository on GitHub to house the reports. Can be public: https://github.com/new
 4. Edit app.js to set this.owner and this.repo on lines 670-671 to your new repo.
-  1. This is the repo where prospatheia will write its reports, so do not commit this change to the production app
+    - This is the repo where prospatheia will write its reports, so do not commit this change to the production app
 5. Run the server locally, providing your GitHub client ID and secret as the environment variables:
 ```
 $ GITHUB_CLIENT_ID=your-client-id \
