@@ -592,9 +592,9 @@ var userModelService = angular.module('ProspatheiaUserModule', ['ngCookies']).se
     return localThis.userModel.user;
   };
 
-  // Token is also exposed
-  this.getAccessToken = function() {
-    return localThis.userModel.accessToken;
+  // Token must be provided in headers, so we expose a function to get that
+  this.getHeaders = function() {
+    return { 'headers' : { 'Authorization' :'token ' + localThis.userModel.accessToken } };
   };
 
   // Cookie handling
@@ -617,7 +617,7 @@ var userModelService = angular.module('ProspatheiaUserModule', ['ngCookies']).se
 
   // GitHub API calls
   this.lookupUser = function(callback) {
-    $http.get(gitHubRoot + '/user?' + this.tokenAsParameter())
+    $http.get(gitHubRoot + '/user', localThis.getHeaders())
       .success(function(data) {
         localThis.userModel.user = data.login;
         callback();
@@ -673,13 +673,9 @@ var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['Prospathei
     return gitHubRoot + '/repos/' + localThis.owner + '/' + localThis.repo + '/contents/' + UserModelService.getUserName() + '.csv';
   };
 
-  this.buildConfig = function() {
-    return { 'headers' : { 'Authorization' :'token ' + UserModelService.getAccessToken() } };
-  };
-
   this.loadFile = function(callback) {
     // GET /repos/:owner/:repo/contents/:path
-    $http.get(localThis.buildURL(), localThis.buildConfig())
+    $http.get(localThis.buildURL(), UserModelService.getHeaders())
       .success(function(data) {
         callback(null, data);
       })
@@ -694,7 +690,7 @@ var gitHubAPIService = angular.module('ProspatheiaGitHubAPIModule', ['Prospathei
       'message': message,
       'sha': sha
     };
-    $http.put(localThis.buildURL(), data, localThis.buildConfig())
+    $http.put(localThis.buildURL(), data, UserModelService.getHeaders())
       .success(function(data) {
         callback(null, data);
       })
